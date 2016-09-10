@@ -186,14 +186,14 @@ The secure exchange of public keys is important, as adversaries are able to
 launch man-in-the-middle-attacks when exchanged insecurely. 
 NO SECURITY CAN BE GUARANTEED BY INSECURE PUBKEY EXCHANCE! 
 
-### Testing Kickstart
+### Kickstart
 
 For the purpose of testing locally, there are three config files stored inside 
 the test directory, configuring three nodes `ipc:///tmp/node1.ipc`, 
 `ipc:///tmp/node2.ipc`, and `ipc:///tmp/node3.ipc`. Additionally, there is a 
 pregenerated keystore and private keys file. IPC is a supported transport that
 lets you communicate between separate processes (i.e. applications) throgh a 
-UNIX file. 
+UNIX file locally on the same machine.  
 
 You can run three clients with
 
