@@ -15,7 +15,7 @@
 #include "transmitter.hpp"
 
 namespace fsm {
-  #include "tarmuft_fsm.h"
+  #include "flock_fsm.h"
 }
 
 class Dispatcher : public Transmitter

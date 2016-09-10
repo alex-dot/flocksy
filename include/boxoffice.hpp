@@ -29,7 +29,7 @@
 #include "config.hpp"
 
 namespace fsm {
-  #include "tarmuft_fsm.h"
+  #include "flock_fsm.h"
 }
 
 class Boxoffice

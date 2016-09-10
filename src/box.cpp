@@ -16,7 +16,7 @@
 #include <iostream>
 
 namespace fsm {
-  #include "tarmuft_fsm.h"
+  #include "flock_fsm.h"
 }
 
 Box::Box() :
