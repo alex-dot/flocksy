@@ -1,0 +1,8 @@
+#
+# Config file for flocksy
+# 
+
+hostname = ipc:///tmp/node3.ipc
+node = ipc:///tmp/node1.ipc
+node = ipc:///tmp/node2.ipc
+box = mainbox@/tmp/testdir3
