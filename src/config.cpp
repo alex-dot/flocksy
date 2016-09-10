@@ -316,7 +316,7 @@ int Config::synchronizeKeystore( std::string* keystore_file,
         return 1;
     } else {
         Json::Reader json_reader;
-        if ( !json_reader.parse(f_pk, pks) ) {
+        if ( !json_reader.parse(f_pk, pks) && !vm_.count("create-private-key") ) {
             std::cerr << "[E] error parsing " << *private_key_file << std::endl;
             return 1;
         }
