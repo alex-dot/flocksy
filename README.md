@@ -51,7 +51,7 @@ from source. It uses a handful of third-party libraries:
 - Boost.Filesystem
 - Boost.Thread
 - Boost.Test
-- Boost.
+- Boost.Program_options
 - CMake
 - Sodium
 - zeromq4-1
