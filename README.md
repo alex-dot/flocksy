@@ -192,10 +192,18 @@ For the purpose of testing locally, there are three config files stored inside
 the test directory, configuring three nodes `ipc:///tmp/node1.ipc`, 
 `ipc:///tmp/node2.ipc`, and `ipc:///tmp/node3.ipc`. Additionally, there is a 
 pregenerated keystore and private keys file. IPC is a supported transport that
-lets you communicate between separate processes (i.e. applications) throgh a 
+lets you communicate between separate processes (i.e. applications) through a 
 UNIX file locally on the same machine.  
 
-You can run three clients with
+You still need three folders in your `/tmp/` directory:
+
+```
+mkdir /tmp/testdir1
+mkdir /tmp/testdir2
+mkdir /tmp/testdir3
+```
+
+You can run the clients with the following line (replace `X` with 1, 2, or 3):
 
 ```
 bin/flocksy -c test/configX --keystore test/flocksy_keystore --privatekey test/flocksy_privatekeys
