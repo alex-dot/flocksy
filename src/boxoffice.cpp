@@ -222,7 +222,6 @@ int Boxoffice::setupSubscribers()
                                                   z_ctx, 
                                                   i->second);
     sub_threads.push_back(sub_thread);
-    ++total_node_number_;
   }
   if (F_MSG_DEBUG) printf("bo: opened %d subscriber threads\n", (int)sub_threads.size());
 
@@ -373,13 +372,18 @@ int Boxoffice::processEvent(fsm::status_t status,
         }
 
         // STATUS_121
-        // waiting for all nodes to reply, so increment node_reply_counter_
-        // until all nodes replied, then manually change the status
+        // waiting for all nodes to reply, then manually change the status
         case fsm::status_121: {
-          ++node_reply_counter_;
+          subscribers[current_node_hash_].replied = true;
 
-          if ( node_reply_counter_ == total_node_number_ ) {
-            node_reply_counter_ = 0;
+          node_map::iterator iter;
+          for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+            if ( iter->second.replied == false ) break;
+          }
+          if ( iter == subscribers.end() ) {
+            for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+              iter->second.replied = false;
+            }
             status = fsm::status_122;
             file_metadata_written_ = false;
             event = fsm::get_event_by_status_code(status);
@@ -389,13 +393,18 @@ int Boxoffice::processEvent(fsm::status_t status,
           break;
         }
         // STATUS_161
-        // waiting for all nodes to reply, so increment node_reply_counter_
-        // until all nodes replied, then manually change the status
+        // waiting for all nodes to reply, then manually change the status
         case fsm::status_161: {
-          ++node_reply_counter_;
+          subscribers[current_node_hash_].replied = true;
 
-          if ( node_reply_counter_ == total_node_number_ ) {
-            node_reply_counter_ = 0;
+          node_map::iterator iter;
+          for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+            if ( iter->second.replied == false ) break;
+          }
+          if ( iter == subscribers.end() ) {
+            for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+              iter->second.replied = false;
+            }
             status = fsm::status_162;
             event = fsm::get_event_by_status_code(status);
             if ( !check_event(state_, event, status) ) return 1;
@@ -404,13 +413,18 @@ int Boxoffice::processEvent(fsm::status_t status,
           break;
         }
         // STATUS_165
-        // waiting for all nodes to reply, so increment node_reply_counter_
-        // until all nodes replied, then manually change the status
+        // waiting for all nodes to reply, then manually change the status
         case fsm::status_165: {
-          ++node_reply_counter_;
+          subscribers[current_node_hash_].replied = true;
 
-          if ( node_reply_counter_ == total_node_number_ ) {
-            node_reply_counter_ = 0;
+          node_map::iterator iter;
+          for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+            if ( iter->second.replied == false ) break;
+          }
+          if ( iter == subscribers.end() ) {
+            for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+              iter->second.replied = false;
+            }
             status = fsm::status_166;
             event = fsm::get_event_by_status_code(status);
             if ( !check_event(state_, event, status) ) return 1;
@@ -420,14 +434,18 @@ int Boxoffice::processEvent(fsm::status_t status,
         }
 
         // STATUS_140
-        // waiting for all nodes to reply, so increment node_reply_counter_
-        // until all nodes replied, then manually change the status to 150
+        // waiting for all nodes to reply, then manually change the status to 150
         case fsm::status_140: {
-          ++node_reply_counter_;
+          subscribers[current_node_hash_].replied = true;
 
-          if ( node_reply_counter_ == total_node_number_ ) {
-            node_reply_counter_ = -1;
-
+          node_map::iterator iter;
+          for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+            if ( iter->second.replied == false ) break;
+          }
+          if ( iter == subscribers.end() ) {
+            for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+              iter->second.replied = false;
+            }
             status = fsm::status_142;
             event = fsm::get_event_by_status_code(status);
             if ( !check_event(state_, event, status) ) return 1;
@@ -436,14 +454,18 @@ int Boxoffice::processEvent(fsm::status_t status,
           break;
         }
         // STATUS_141
-        // waiting for all nodes to reply, so increment node_reply_counter_
-        // until all nodes replied, then manually change the status
+        // waiting for all nodes to reply, then manually change the status
         case fsm::status_141: {
-          ++node_reply_counter_;
+          subscribers[current_node_hash_].replied = true;
 
-          if ( node_reply_counter_ == total_node_number_ ) {
-            node_reply_counter_ = -1;
-
+          node_map::iterator iter;
+          for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+            if ( iter->second.replied == false ) break;
+          }
+          if ( iter == subscribers.end() ) {
+            for (iter = subscribers.begin(); iter != subscribers.end(); ++iter) {
+              iter->second.replied = false;
+            }
             if (file_list_metadata_.size() > 0) {
               // have more metadata only files
               status = fsm::status_174;
@@ -474,7 +496,10 @@ int Boxoffice::processEvent(fsm::status_t status,
         // STATUS_132
         case fsm::status_132:
           {
-            node_reply_counter_ = 0;
+            for (node_map::iterator iter = subscribers.begin();
+                 iter != subscribers.end(); ++iter) {
+              iter->second.replied = false;
+            }
             break;
           }
 
@@ -754,7 +779,10 @@ int Boxoffice::processEvent(fsm::status_t status,
       } else {
         file_list->push_back(new_file);
       }
-      node_reply_counter_ = 0;
+      for (node_map::iterator iter = subscribers.begin();
+           iter != subscribers.end(); ++iter) {
+        iter->second.replied = false;
+      }
     }
 
 
@@ -921,19 +949,20 @@ int Boxoffice::updateTimestamp(std::stringstream* sstream) {
   sstream->read(node_hash_s, F_GENERIC_HASH_LEN);
   unsigned char node_hash[F_GENERIC_HASH_LEN];
   std::memcpy(node_hash, node_hash_s, F_GENERIC_HASH_LEN);
-  Hash* hash = new Hash(node_hash);
+  delete current_node_hash_;
+  current_node_hash_ = new Hash(node_hash);
   uint64_t node_timestamp, local_timestamp;
   uint16_t offset;
   char* node_timestamp_c = new char[8];
   sstream->seekg(1, std::ios_base::cur);
   sstream->read(node_timestamp_c, 8);
   std::memcpy(&node_timestamp, node_timestamp_c, 8);
-  subscribers[hash].last_timestamp = be64toh(node_timestamp);
+  subscribers[current_node_hash_].last_timestamp = be64toh(node_timestamp);
   local_timestamp = std::chrono::duration_cast< std::chrono::milliseconds >(
     std::chrono::system_clock::now().time_since_epoch()
   ).count();
-  offset = local_timestamp - subscribers[hash].last_timestamp;
-  subscribers[hash].offset = offset;
+  offset = local_timestamp - subscribers[current_node_hash_].last_timestamp;
+  subscribers[current_node_hash_].offset = offset;
 
   return 0;
 }

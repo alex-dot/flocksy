@@ -52,14 +52,13 @@ class Boxoffice
       state_(fsm::ready_state),
       file_list_metadata_(),
       file_list_data_(),
-      node_reply_counter_(0),
-      total_node_number_(0),
       current_timing_offset_(-1),
       notified_dispatch_(false),
       current_box_(new unsigned char[F_GENERIC_HASH_LEN]),
       current_file_(),
       file_metadata_written_(false),
       stop_sync_timeout_received_(false),
+      current_node_hash_(nullptr),
       z_ctx(nullptr),
       z_bo_main(nullptr),
       z_router(nullptr),
@@ -107,14 +106,13 @@ class Boxoffice
 
     std::deque< File* > file_list_metadata_;
     std::deque< File* > file_list_data_;
-    int node_reply_counter_;
-    int total_node_number_;
     uint64_t current_timing_offset_;
     bool notified_dispatch_;
     unsigned char* current_box_;
     std::stringstream current_file_;
     bool file_metadata_written_;
     bool stop_sync_timeout_received_;
+    Hash* current_node_hash_;
 
     zmqpp::context* z_ctx;
     zmqpp::socket* z_bo_main;

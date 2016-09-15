@@ -168,6 +168,9 @@ node = tcp://127.0.0.1:5672
 box = mainbox@/home/alex/testdir
 ```
 
+Note that the current version of flock requires all configured nodes to be 
+actually connected and running. Otherwise the running clients will stuck. 
+
 ### Generating Keys
 
 To generate a new long-term keypair, simply run `./flocksy --create-new-keypair`. 
