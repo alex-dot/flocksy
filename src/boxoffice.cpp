@@ -381,6 +381,7 @@ int Boxoffice::processEvent(fsm::status_t status,
           if ( node_reply_counter_ == total_node_number_ ) {
             node_reply_counter_ = 0;
             status = fsm::status_122;
+            file_metadata_written_ = false;
             event = fsm::get_event_by_status_code(status);
             if ( !check_event(state_, event, status) ) return 1;
           }
@@ -497,7 +498,14 @@ int Boxoffice::processEvent(fsm::status_t status,
               new_file->resize();
               file_metadata_written_ = true;
             }
+            std::memcpy(current_box_, box_hash, F_GENERIC_HASH_LEN);
+            std::stringstream cf;
+            cf << *new_file;
+            current_file_.str("");
+            current_file_.clear();
+            current_file_ << cf.str().substr(32);
             delete new_file;
+            notified_dispatch_ = false;
 
             char* timing_offset_c = new char[8];
             sstream->read(timing_offset_c, 8);
@@ -584,6 +592,8 @@ int Boxoffice::processEvent(fsm::status_t status,
             std::memcpy(current_box_, box_hash, F_GENERIC_HASH_LEN);
             std::stringstream cf;
             cf << *new_file;
+            current_file_.str("");
+            current_file_.clear();
             current_file_ << cf.str().substr(32);
             delete new_file;
             notified_dispatch_ = false;
@@ -676,7 +686,10 @@ int Boxoffice::processEvent(fsm::status_t status,
       Hash* box_hash_obj = new Hash(current_box_);
       Box* box = boxes[box_hash_obj];
       message << box->getBaseDir() << " ";
-      message << current_file_.str();
+      File* current_file = file_list_data_.front();
+      std::stringstream cf;
+      cf << *current_file;
+      message << cf.str().substr(32);
 
       zmqpp::message z_msg;
       z_msg << message.str();
@@ -734,6 +747,9 @@ int Boxoffice::processEvent(fsm::status_t status,
         iter = std::find(file_list->begin(), file_list->end(), new_file);
         if ( iter != file_list->end() ) {
           file_list->push_back(new_file);
+        } else {
+          status = fsm::status_301;
+          event = fsm::get_event_by_status_code(status);
         }
       } else {
         file_list->push_back(new_file);
@@ -844,6 +860,8 @@ void Boxoffice::prepareHeartbeatMessage(std::stringstream* message,
     File* current_file = file_list_data_.front();
     std::stringstream cf;
     cf << *current_file;
+    current_file_.str("");
+    current_file_.clear();
     current_file_ << cf.str().substr(32);
     *message << *current_file;
     file_list_data_.pop_front();
@@ -856,6 +874,8 @@ void Boxoffice::prepareHeartbeatMessage(std::stringstream* message,
     File* current_file = file_list_metadata_.front();
     std::stringstream cf;
     cf << *current_file;
+    current_file_.str("");
+    current_file_.clear();
     current_file_ << cf.str().substr(32);
     *message << *current_file;
     file_list_metadata_.pop_front();
