@@ -78,6 +78,7 @@ struct node_t {
   int16_t       offset;
   std::string   public_key;
   unsigned char uid[F_GENERIC_HASH_LEN];
+  bool          replied;
 };
 struct host_t {
   std::string           endpoint;

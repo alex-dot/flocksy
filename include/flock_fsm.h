@@ -109,6 +109,7 @@ typedef enum {
     status_200 = 200,
     status_210 = 210,
     status_300 = 300,
+    status_301 = 301,
     status_304 = 304,
     status_320 = 320,
     status_324 = 324,
@@ -124,18 +125,19 @@ typedef enum {
     local_file_metadata_change_with_more_event = 4,
     received_heartbeat_event = 5,
     all_nodes_replied_event = 6,
-    timing_offset_elapsed_event = 7,
-    all_nodes_have_file_event = 8,
-    all_nodes_have_all_files_event = 9,
-    all_nodes_have_all_metadata_changes_with_more_event = 10,
-    file_send_tick_event = 11,
-    received_fake_file_data_event = 12,
-    node_only_sends_heartbeats_event = 13,
-    all_nodes_have_file_with_more_event = 14,
-    all_metadata_received_event = 15,
-    received_file_data_event = 16,
-    all_data_received_event = 17,
-    interrupt_event = 18
+    new_local_file_reported_twice_event = 7,
+    timing_offset_elapsed_event = 8,
+    all_nodes_have_file_event = 9,
+    all_nodes_have_all_files_event = 10,
+    all_nodes_have_all_metadata_changes_with_more_event = 11,
+    file_send_tick_event = 12,
+    received_fake_file_data_event = 13,
+    node_only_sends_heartbeats_event = 14,
+    all_nodes_have_file_with_more_event = 15,
+    all_metadata_received_event = 16,
+    received_file_data_event = 17,
+    all_data_received_event = 18,
+    interrupt_event = 19
 } event_t;
 
 typedef enum {
@@ -248,6 +250,8 @@ static inline event_t
         return received_fake_file_data_event;
     } else if ( status == status_300 ) {
         return new_local_file_event;
+    } else if ( status == status_301 ) {
+        return new_local_file_reported_twice_event;
     } else if ( status == status_304 ) {
         return new_local_file_with_more_event;
     } else if ( status == status_320 ) {
@@ -297,6 +301,8 @@ static inline bool
         } else if ( event == all_nodes_replied_event && status == status_122 ) {
             return true;
         } else if ( event == new_local_file_event && status == status_300 ) {
+            return true;
+        } else if ( event == new_local_file_reported_twice_event && status == status_301 ) {
             return true;
         } else if ( event == new_local_file_with_more_event && status == status_304 ) {
             return true;
@@ -963,6 +969,8 @@ static inline action_t
             return send_heartbeat_action;
         } else if ( event == new_local_file_event && status == status_300 ) {
             return send_heartbeat_action;
+        } else if ( event == new_local_file_reported_twice_event && status == status_301 ) {
+            return send_heartbeat_action;
         } else if ( event == new_local_file_with_more_event && status == status_304 ) {
             return send_heartbeat_action;
         } else if ( event == local_file_metadata_change_event && status == status_320 ) {
@@ -1628,6 +1636,8 @@ static inline status_t
             return status_130;
         } else if ( event == new_local_file_event && received_status == status_300 ) {
             return status_124;
+        } else if ( event == new_local_file_reported_twice_event && received_status == status_301 ) {
+            return status_120;
         } else if ( event == new_local_file_with_more_event && received_status == status_304 ) {
             return status_124;
         } else if ( event == local_file_metadata_change_event && received_status == status_320 ) {
@@ -2293,6 +2303,8 @@ static inline state_t
             return sending_new_file_metadata_state;
         } else if ( event == new_local_file_event && received_status == status_300 ) {
             return announcing_new_file_with_more_state;
+        } else if ( event == new_local_file_reported_twice_event && received_status == status_301 ) {
+            return announcing_new_file_state;
         } else if ( event == new_local_file_with_more_event && received_status == status_304 ) {
             return announcing_new_file_with_more_state;
         } else if ( event == local_file_metadata_change_event && received_status == status_320 ) {

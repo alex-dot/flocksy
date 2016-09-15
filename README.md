@@ -48,10 +48,10 @@ It is not meant for production use. At all.
 There are currently no builds being distributed, i.e. flocksy must be compiled
 from source. It uses a handful of third-party libraries:
 
-- Boost.Filesystem
-- Boost.Thread
-- Boost.Test
-- Boost.
+- Boost.Filesystem (>1.55)
+- Boost.Thread (>1.55)
+- Boost.Test (>1.55)
+- Boost.Program_options (>1.55)
 - CMake
 - Sodium
 - zeromq4-1
@@ -167,6 +167,9 @@ hostname = tcp://127.0.0.1:5671
 node = tcp://127.0.0.1:5672
 box = mainbox@/home/alex/testdir
 ```
+
+Note that the current version of flock requires all configured nodes to be 
+actually connected and running. Otherwise the running clients will stuck. 
 
 ### Generating Keys
 

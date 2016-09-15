@@ -30,81 +30,88 @@ int Config::initialize(int argc, char* argv[])
 
     // parsing program options using boost::program_options
     namespace po = boost::program_options;
-
-    po::options_description cmdline_options("Generic options");
-    cmdline_options.add_options()
-        ("help,h", "Produce this help message")
-        ("config,c", po::value<std::string>(&configfile),
-            "Use supplied config file instead of default one")
-        ("keystore", po::value<std::string>(&keystore_file),
-            "Use supplied keystore file instead of default one")
-        ("privatekey", po::value<std::string>(&private_key_file),
-            "Use supplied privatekey file instead of default one")
-        ("create-private-key", "Create new keypair for hostnames")
-    ;
-
-    po::options_description generic_options("Allowed options");
-    generic_options.add_options()
-        ("node,n", po::value<std::vector< std::string >>(&nodes), 
-            "Add node location to listen to (multiple arguments allowed)")
-        ("box,b", po::value<std::vector <std::string> >(&box_strings), 
-            "Add path of a directory to watch (multiple arguments allowed)")
-        ("hostname,p", po::value<std::vector <std::string> >(&hostnames),
-            "Add a name for this machine under which other nodes can reach it (multiple arguments allowed)")
-    ;
-
     po::options_description options;
-    options.add(cmdline_options).add(generic_options);
+
+    try {
+        po::options_description cmdline_options("Generic options");
+        cmdline_options.add_options()
+            ("help,h", "Produce this help message")
+            ("config,c", po::value<std::string>(&configfile),
+                "Use supplied config file instead of default one")
+            ("keystore", po::value<std::string>(&keystore_file),
+                "Use supplied keystore file instead of default one")
+            ("privatekey", po::value<std::string>(&private_key_file),
+                "Use supplied privatekey file instead of default one")
+            ("create-private-key", "Create new keypair for hostnames")
+        ;
+
+        po::options_description generic_options("Allowed options");
+        generic_options.add_options()
+            ("node,n", po::value<std::vector< std::string >>(&nodes), 
+                "Add node location to listen to (multiple arguments allowed)")
+            ("box,b", po::value<std::vector <std::string> >(&box_strings), 
+                "Add path of a directory to watch (multiple arguments allowed)")
+            ("hostname,p", po::value<std::vector <std::string> >(&hostnames),
+                "Add a name for this machine under which other nodes can reach it (multiple arguments allowed)")
+        ;
+
+        options.add(cmdline_options).add(generic_options);
 
 
-    // BUG we cannot ADD nodes/boxes through the cli,
-    //     it takes either the config file or the command line...
-    // parse command line arguments
-    po::store(po::parse_command_line( argc, argv, options ), c->vm_);
-    po::notify(c->vm_);
-
-    // parse config file, if any
-    wordexp_t expanded_config_file_path;
-    if (configfile.empty()) {
-        wordexp( F_CONFIG_FILE, &expanded_config_file_path, 0 );
-    } else {
-        wordexp( configfile.c_str(), &expanded_config_file_path, 0 );
-    }
-    std::ifstream ifs( expanded_config_file_path.we_wordv[0] );
-    wordfree(&expanded_config_file_path);
-    if ( !ifs ) {
-        if (F_MSG_DEBUG) printf("config: no config file found\n");
-    } else {
-        po::store(po::parse_config_file(ifs, generic_options), c->vm_);
+        // BUG we cannot ADD nodes/boxes through the cli,
+        //     it takes either the config file or the command line...
+        // parse command line arguments
+        po::store(po::parse_command_line( argc, argv, options ), c->vm_);
         po::notify(c->vm_);
-        ifs.close();
-    }
 
-    // parse keystore file
-    wordexp_t expanded_keystore_file_path;
-    if (keystore_file.empty()) {
-        wordexp( F_KEYSTORE_FILE, &expanded_keystore_file_path, 0 );
-    } else {
-        wordexp( keystore_file.c_str(), &expanded_keystore_file_path, 0 );
-    }
-    keystore_file = expanded_keystore_file_path.we_wordv[0];
-    wordfree(&expanded_keystore_file_path);
+        // parse config file, if any
+        wordexp_t expanded_config_file_path;
+        if (configfile.empty()) {
+            wordexp( F_CONFIG_FILE, &expanded_config_file_path, 0 );
+        } else {
+            wordexp( configfile.c_str(), &expanded_config_file_path, 0 );
+        }
+        std::ifstream ifs( expanded_config_file_path.we_wordv[0] );
+        wordfree(&expanded_config_file_path);
+        if ( !ifs ) {
+            if (F_MSG_DEBUG) printf("config: no config file found\n");
+        } else {
+            po::store(po::parse_config_file(ifs, generic_options), c->vm_);
+            po::notify(c->vm_);
+            ifs.close();
+        }
 
-    // parse privatekey file
-    wordexp_t expanded_privatekey_file_path;
-    if (private_key_file.empty()) {
-        wordexp( F_PRIVATEKEY_FILE, &expanded_privatekey_file_path, 0 );
-    } else {
-        wordexp( private_key_file.c_str(), &expanded_privatekey_file_path, 0 );
-    }
-    private_key_file = expanded_privatekey_file_path.we_wordv[0];
-    wordfree(&expanded_privatekey_file_path);
+        // parse keystore file
+        wordexp_t expanded_keystore_file_path;
+        if (keystore_file.empty()) {
+            wordexp( F_KEYSTORE_FILE, &expanded_keystore_file_path, 0 );
+        } else {
+            wordexp( keystore_file.c_str(), &expanded_keystore_file_path, 0 );
+        }
+        keystore_file = expanded_keystore_file_path.we_wordv[0];
+        wordfree(&expanded_keystore_file_path);
 
-    int return_val;
-    return_val = c->doSanityCheck( &options, &nodes, &hostnames, &box_strings );
-    if ( return_val != 0 ) return return_val;
-    return_val = c->synchronizeKeystore( &keystore_file, &private_key_file );
-    return return_val;
+        // parse privatekey file
+        wordexp_t expanded_privatekey_file_path;
+        if (private_key_file.empty()) {
+            wordexp( F_PRIVATEKEY_FILE, &expanded_privatekey_file_path, 0 );
+        } else {
+            wordexp( private_key_file.c_str(), &expanded_privatekey_file_path, 0 );
+        }
+        private_key_file = expanded_privatekey_file_path.we_wordv[0];
+        wordfree(&expanded_privatekey_file_path);
+
+        int return_val;
+        return_val = c->doSanityCheck( &options, &nodes, &hostnames, &box_strings );
+        if ( return_val != 0 ) return return_val;
+        return_val = c->synchronizeKeystore( &keystore_file, &private_key_file );
+        return return_val;
+
+    } catch(po::error& e) {
+        std::cout << "[E] " << e.what() << std::endl;
+        std::cout << options << std::endl;
+        return 1;
+    }
 }
 
 const node_map
