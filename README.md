@@ -48,10 +48,10 @@ It is not meant for production use. At all.
 There are currently no builds being distributed, i.e. flocksy must be compiled
 from source. It uses a handful of third-party libraries:
 
-- Boost.Filesystem
-- Boost.Thread
-- Boost.Test
-- Boost.Program_options
+- Boost.Filesystem (>1.55)
+- Boost.Thread (>1.55)
+- Boost.Test (>1.55)
+- Boost.Program_options (>1.55)
 - CMake
 - Sodium
 - zeromq4-1
