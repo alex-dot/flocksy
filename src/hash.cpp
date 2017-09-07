@@ -51,7 +51,11 @@ void Hash::initializeHash(const unsigned char* hash_bytes) {
     std::memcpy(hash_, hash_bytes, F_GENERIC_HASH_LEN);
 }
 const std::string Hash::getString() const {
-  return std::string(reinterpret_cast<char*>(hash_));
+  std::stringstream sstream;
+  for( uint i = 0; i < F_GENERIC_HASH_LEN; ++i ) {
+    sstream << std::hex << std::setfill('0') << std::setw(2) << (int)hash_[i];
+  }
+  return sstream.str();
 }
 const unsigned char* Hash::getBytes() const {
   return hash_;

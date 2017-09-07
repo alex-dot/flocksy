@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-#define F_GENERIC_HASH_LEN 32U
+#define F_GENERIC_HASH_LEN 64U
 
 /**
  * \brief Wrapper class for hashed strings enabling sorting etc.
