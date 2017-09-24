@@ -22,7 +22,7 @@ class HashTree
     HashTree(const std::vector< std::shared_ptr<Hash> >& hashes) : hashes_(hashes){}
     ~HashTree();
 
-    void makeHashTree(std::vector< std::shared_ptr<Hash> >& temp_hashes);
+    void makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes);
     void makeHashTreeFromSelf();
 
     const std::vector< std::shared_ptr<Hash> >* getHashes() const;

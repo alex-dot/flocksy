@@ -23,7 +23,7 @@ HashTree::~HashTree()
   }*/
 }
 
-void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> >& temp_hashes)
+void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
 {
   // if this object already has a tree, clean up
   hashes_.clear();

@@ -1,8 +1,35 @@
 #include <boost/test/unit_test.hpp>
 #include "hash_tree.hpp"
-#include "test_hash_tree_helper.hpp"
 #include <algorithm>
 
+BOOST_AUTO_TEST_CASE(hash_tree_constructors)
+{
+  std::shared_ptr<Hash> hash(new Hash("test"));
+  std::vector< std::shared_ptr<Hash> > hashes = { hash };
+  HashTree* ht;
+
+  // 3 cases::
+  // unintialized, calling makeHashTree()
+  ht = new HashTree();
+  ht->makeHashTree(hashes);
+  BOOST_CHECK_EQUAL( ht->getHashes()->back(), const_cast<const std::vector< std::shared_ptr<Hash> >*>(&hashes)->back() );
+  delete ht;
+  // initialized with HashTree-vector
+  ht = new HashTree(hashes);
+  BOOST_CHECK_EQUAL( ht->getHashes()->back(), const_cast<const std::vector< std::shared_ptr<Hash> >*>(&hashes)->back() );
+  delete ht;
+  // initialized with Hashes-vector, calling makeHashTreeFromSelf()
+  ht = new HashTree(hashes);
+  ht->makeHashTreeFromSelf();
+  BOOST_CHECK_EQUAL( ht->getHashes()->back(), const_cast<const std::vector< std::shared_ptr<Hash> >*>(&hashes)->back() );
+  delete ht;
+}
+BOOST_AUTO_TEST_CASE(hash_tree_empty)
+{
+  HashTree* ht = new HashTree();
+  BOOST_CHECK( ht->empty() );
+  delete ht;
+}
 BOOST_AUTO_TEST_CASE(hash_tree_size_compare)
 {
   std::shared_ptr<Hash> hash(new Hash("test"));
@@ -84,72 +111,75 @@ BOOST_AUTO_TEST_CASE(hash_tree_size_compare_random)
 
   delete ht;
 }
-BOOST_AUTO_TEST_CASE(hash_tree_compare)
+BOOST_AUTO_TEST_CASE(hash_tree_change)
 {
-  for (int i = 0; i < 10; ++i)
-  {
-    // this check is intentionally slow
-    // to make it at all feasible, the maximium number
-    // of values (not nodes) in the tree is limited to 999
-    int random = rand() % 999;
-    BOOST_CHECK(hash_tree_compare_helper(random));
-  }
+  std::shared_ptr<Hash> hash1(new Hash("test1"));
+  std::shared_ptr<Hash> hash2(new Hash("test2"));
+  std::vector< std::shared_ptr<Hash> > hashes_orig = { hash1, hash1, hash1 };
+  std::vector< std::shared_ptr<Hash> > hashes_diff = { hash1, hash2, hash1 };
+  HashTree* ht_orig = new HashTree(hashes_orig);
+  HashTree* ht_diff = new HashTree(hashes_diff);
+  ht_orig->makeHashTreeFromSelf();
+  ht_diff->makeHashTreeFromSelf();
+  BOOST_CHECK( ht_orig->checkHashTreeChange(*ht_diff) );
 }
-BOOST_AUTO_TEST_CASE(hash_tree_compare_diff)
+BOOST_AUTO_TEST_CASE(hash_tree_changed_hashes)
 {
-  std::shared_ptr<Hash> hash_orig(new Hash("test"));  // 7ab383fc29d81f8d0d68e87c69bae5f1f18266d730c48b1d
-  std::shared_ptr<Hash> hash_diff(new Hash("test2")); // 3b1b47a309a5f1be449e3719e5160c8572c4425685830d2b
-  std::vector< std::shared_ptr<Hash> > hashes_orig(8);
-  std::vector< std::shared_ptr<Hash> > hashes_diff(8);
-  std::vector< std::shared_ptr<Hash> > changed_hashes;
-  HashTree* ht_orig = new HashTree();
-  HashTree* ht_diff = new HashTree();
+  std::shared_ptr<Hash> hash1(new Hash("test1"));
+  std::shared_ptr<Hash> hash2(new Hash("test2"));
+  std::vector< std::shared_ptr<Hash> > hashes_orig = { hash1, hash1, hash1 };
+  std::vector< std::shared_ptr<Hash> > hashes_diff = { hash1, hash2, hash1 };
+  std::vector< std::shared_ptr<Hash> > hashes_returned;
+  HashTree* ht_orig = new HashTree(hashes_orig);
+  HashTree* ht_diff = new HashTree(hashes_diff);
+  ht_orig->makeHashTreeFromSelf();
+  ht_diff->makeHashTreeFromSelf();
 
-  for (int i = 0; i < 8; ++i) // check all 8 permutations
-  {
-    hashes_orig.clear();
-    hashes_diff.clear();
-    changed_hashes.clear();
-    for (int j = 0; j < 8; ++j) // fill vectors with permutation
-    {
-      hashes_orig.push_back(hash_orig);
-      if (i==j) { hashes_diff.push_back(hash_diff); }
-      else { hashes_diff.push_back(hash_orig); }
-    }
-    ht_orig->makeHashTree(hashes_orig);
-    ht_diff->makeHashTree(hashes_diff);
-
-    BOOST_CHECK(ht_diff->getChangedHashes(changed_hashes, *ht_orig));
-    BOOST_CHECK_EQUAL(1, changed_hashes.size());
-    BOOST_CHECK_EQUAL(changed_hashes[0], hashes_diff[0]);
-  }
+  ht_orig->getChangedHashes( hashes_returned, *ht_diff );
+  BOOST_CHECK_EQUAL( hashes_returned.size(), 1 );
+  BOOST_CHECK_EQUAL( hashes_returned[0], hash2 );
 }
 BOOST_AUTO_TEST_CASE(hash_tree_sort)
 {
-  std::shared_ptr<Hash> hash1(new Hash("test1")); // C099BBD00FAF33027AB55BFB4C3A67F19ECD8EB950078ED2
-  std::shared_ptr<Hash> hash2(new Hash("test2")); // 3B1B47A309A5F1BE449E3719E5160C8572C4425685830D2B
-  std::shared_ptr<Hash> hash3(new Hash("test3")); // B8B9F8AB7E7B617ABD37E86B89DEE671F6332AF9A4088497
-  std::shared_ptr<Hash> hash4(new Hash("test4")); // 7A8CFACA415DFD2ACB4930F4D8EA4D7477D0622B61736CB7
-  std::shared_ptr<Hash> hash5(new Hash("test5")); // 550F59F87EFA94C8A9E04D7238064BBE29D221097CEBD9B3
+  std::shared_ptr<Hash> hash1(new Hash("test1")); // c689bf21986252dab8c946042cd73c44995a205da7b8c0816c56ee33894acbace61f27ed94d9ffc2a0d3bee7539565aca834b220af95cc5abb2ceb90946606fe
+  std::shared_ptr<Hash> hash2(new Hash("test2")); // e1b1bfe59054380ac6eb014388b2db3a03d054770ededd9ee148c8b29aa272bbd079344bb40a92d0a754cd925f4beb48c9fd66a0e90b0d341b6fe3bbb4893246
+  std::shared_ptr<Hash> hash3(new Hash("test3")); // 08661229443b4c34cf289b868f8de120dd5eae28551ee3568bfd8058901d44f5641a6785117907b99bdfe951124dcb6ce6c7235aa9a13ae8e6808272ebef0278
+  std::shared_ptr<Hash> hash4(new Hash("test4")); // 0bbabcef4b2f47db3d8964fc0914cf8ceeecf567ca2d3f8d14890b7ced64e4260727eafb25c79ce3cde190e6ccbd014d329cae947e82b2c4a68561ed86590ce2
+  std::shared_ptr<Hash> hash5(new Hash("test5")); // e235bcab3b125578f8720d4dd2513726fc3af20896535692812aae76459deeea0813f2514a533d04bf44ac3f440027eb87c75b6cd112e454b78129194d1363ea
+
   // therefore the correct order would be:
-  // hash2, hash5, hash4, hash3, hash1
+  // hash3, hash4, hash1, hash2, hash5
   std::vector< std::shared_ptr<Hash> > hashes = {hash1, hash2, hash3, hash4, hash5};
   std::sort (hashes.begin(), hashes.end(), hashSharedPointerLessThanFunctor());
-  BOOST_CHECK_EQUAL(hash2->getString(), hashes[0]->getString());
-  BOOST_CHECK_EQUAL(hash5->getString(), hashes[1]->getString());
-  BOOST_CHECK_EQUAL(hash4->getString(), hashes[2]->getString());
-  BOOST_CHECK_EQUAL(hash3->getString(), hashes[3]->getString());
-  BOOST_CHECK_EQUAL(hash1->getString(), hashes[4]->getString());
-  BOOST_CHECK_EQUAL(hash2->getString(), hashes[0]->getString());
+  BOOST_CHECK_EQUAL(hash3->getString(), hashes[0]->getString());
+  BOOST_CHECK_EQUAL(hash4->getString(), hashes[1]->getString());
+  BOOST_CHECK_EQUAL(hash1->getString(), hashes[2]->getString());
+  BOOST_CHECK_EQUAL(hash2->getString(), hashes[3]->getString());
+  BOOST_CHECK_EQUAL(hash5->getString(), hashes[4]->getString());
 }
 BOOST_AUTO_TEST_CASE(hash_tree_top_hash)
 {
-  std::shared_ptr<Hash> hash(new Hash("test"));
+  std::shared_ptr<Hash> hash(new Hash("test1"));
   std::vector< std::shared_ptr<Hash> > hashes = {hash, hash, hash};
   HashTree* ht = new HashTree(hashes);
   ht->makeHashTreeFromSelf();
-  // Value taken from: http://asecuritysite.com/encryption/tiger
-  std::string hash_string = "2FB13E2BC6157D929F28B44E51F563D9812787CD6BAAB82E";
-  std::transform(hash_string.begin(), hash_string.end(), hash_string.begin(), ::tolower);
+  // Value generated with pyblake2
+  std::string hash_string = "b242e8fb44f589a2bd6d74dcdd63ceebd3be332e01ccc0730b316503527b64705e244151110294142bffee83f1d1b469b7ee9c11c7346ac70403fedf1693bf69";
   BOOST_CHECK_EQUAL(hash_string, ht->getTopHash()->getString());
+}
+BOOST_AUTO_TEST_CASE(hash_tree_elements_per_level)
+{
+  std::shared_ptr<Hash> hash1(new Hash("test1")); 
+  std::shared_ptr<Hash> hash2(new Hash("test2")); 
+  std::shared_ptr<Hash> hash3(new Hash("test3")); 
+  std::shared_ptr<Hash> hash4(new Hash("test4"));
+  std::shared_ptr<Hash> hash5(new Hash("test5"));
+  std::vector< std::shared_ptr<Hash> > hashes = {hash1, hash2, hash3, hash4, hash5};
+  HashTree* ht = new HashTree(hashes);
+  ht->makeHashTreeFromSelf();
+  const std::vector<int> epl = *(ht->getElementsPerLevel());
+  BOOST_CHECK_EQUAL(epl[0],5);
+  BOOST_CHECK_EQUAL(epl[1],3);
+  BOOST_CHECK_EQUAL(epl[2],2);
+  BOOST_CHECK_EQUAL(epl[3],1);
 }
