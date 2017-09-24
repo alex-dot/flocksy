@@ -11,18 +11,7 @@
 
 #include <iostream>
 
-HashTree::~HashTree()
-{/*
-  for (std::vector<Hash*>::iterator i = hashes_.begin(); i != hashes_.end(); ++i)
-  {
-    if (*i != nullptr)
-    {
-      delete *i;
-      *i = nullptr;
-    }
-  }*/
-}
-
+HashTree::~HashTree() {}
 void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
 {
   // if this object already has a tree, clean up
