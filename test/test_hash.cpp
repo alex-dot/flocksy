@@ -49,13 +49,13 @@ BOOST_AUTO_TEST_CASE(hash_makeHash)
     boost::filesystem::path("../../repos/blake2-kat.json")
   );
   if( !boost::filesystem::exists(test_vector_file_path1) ) {
-      if( !boost::filesystem::exists(test_vector_file_path2) ) {
+      if( !boost::filesystem::exists(test_vector_file_path2) ) {      // LCOV_EXCL_START
       std::cout << "ERROR: official Blake2b test vectors required" << std::endl
                 << "You can download them and put them into the /repos directory of the flocksy project" << std::endl
                 << "URL: https://raw.githubusercontent.com/BLAKE2/BLAKE2/master/testvectors/blake2-kat.json" << std::endl;
     } else {
       test_vector_file_path = test_vector_file_path2;
-    }
+    }                                                                 // LCOV_EXCL_STOP
   } else {
     test_vector_file_path = test_vector_file_path1;
   }

@@ -3,12 +3,21 @@ project("flocksy")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
+set(PROJECT_TEST_NAME "flocksyTest")
+
 # C++11 support
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 # print all Warnings
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 # enable debugging
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG -g -O0 -ggdb")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG -g -O0 -ggdb --coverage")
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
+if(CMAKE_COMPILER_IS_GNUCXX)
+    include(CodeCoverage)
+    set(COVERAGE_EXCLUDES 'boost/*' '/usr/include/x86_64-linux-gnu/c++/4.9/bits/*' '4.9/*')
+    setup_target_for_coverage(NAME ${PROJECT_TEST_NAME}_coverage EXECUTABLE ${PROJECT_TEST_NAME} DEPENDENCIES ${PROJECT_TEST_NAME})
+endif()
 
 # Threads
 find_package(Threads)

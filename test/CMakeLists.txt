@@ -1,24 +1,24 @@
-add_test(NAME hash_structors COMMAND flocksyTest -t hash_structors)
-add_test(NAME hash_makeHash COMMAND flocksyTest -t hash_makeHash)
-add_test(NAME hash_compare COMMAND flocksyTest -t hash_compare)
-add_test(NAME hash_tree_constructors COMMAND flocksyTest -t hash_tree_constructors)
-add_test(NAME hash_tree_empty COMMAND flocksyTest -t hash_tree_empty)
-add_test(NAME hash_tree_size_compare COMMAND flocksyTest -t hash_tree_size_compare)
-# add_test(NAME hash_tree_size_compare_random COMMAND flocksyTest -t hash_tree_size_compare_random)
-add_test(NAME hash_tree_change COMMAND flocksyTest -t hash_tree_change)
-add_test(NAME hash_tree_changed_hashes COMMAND flocksyTest -t hash_tree_changed_hashes)
-add_test(NAME hash_tree_sort COMMAND flocksyTest -t hash_tree_sort)
-add_test(NAME hash_tree_top_hash COMMAND flocksyTest -t hash_tree_top_hash)
-add_test(NAME hash_tree_elements_per_level COMMAND flocksyTest -t hash_tree_elements_per_level)
-#add_test(NAME directory_manual COMMAND flocksyTest -t directory_manual)
-#add_test(NAME directory_auto COMMAND flocksyTest -t directory_auto)
-#add_test(NAME directory_compare COMMAND flocksyTest -t directory_compare)
-# add_test(NAME box_test COMMAND flocksyTest -t box_test)
-#add_test(NAME box_compare COMMAND flocksyTest -t box_compare)
+add_test(NAME hash_structors COMMAND ${PROJECT_TEST_NAME} -t hash_structors)
+add_test(NAME hash_makeHash COMMAND ${PROJECT_TEST_NAME} -t hash_makeHash)
+add_test(NAME hash_compare COMMAND ${PROJECT_TEST_NAME} -t hash_compare)
+add_test(NAME hash_tree_constructors COMMAND ${PROJECT_TEST_NAME} -t hash_tree_constructors)
+add_test(NAME hash_tree_empty COMMAND ${PROJECT_TEST_NAME} -t hash_tree_empty)
+add_test(NAME hash_tree_size_compare COMMAND ${PROJECT_TEST_NAME} -t hash_tree_size_compare)
+# add_test(NAME hash_tree_size_compare_random COMMAND ${PROJECT_TEST_NAME} -t hash_tree_size_compare_random)
+add_test(NAME hash_tree_change COMMAND ${PROJECT_TEST_NAME} -t hash_tree_change)
+add_test(NAME hash_tree_changed_hashes COMMAND ${PROJECT_TEST_NAME} -t hash_tree_changed_hashes)
+add_test(NAME hash_tree_sort COMMAND ${PROJECT_TEST_NAME} -t hash_tree_sort)
+add_test(NAME hash_tree_top_hash COMMAND ${PROJECT_TEST_NAME} -t hash_tree_top_hash)
+add_test(NAME hash_tree_elements_per_level COMMAND ${PROJECT_TEST_NAME} -t hash_tree_elements_per_level)
+#add_test(NAME directory_manual COMMAND ${PROJECT_TEST_NAME} -t directory_manual)
+#add_test(NAME directory_auto COMMAND ${PROJECT_TEST_NAME} -t directory_auto)
+#add_test(NAME directory_compare COMMAND ${PROJECT_TEST_NAME} -t directory_compare)
+# add_test(NAME box_test COMMAND ${PROJECT_TEST_NAME} -t box_test)
+#add_test(NAME box_compare COMMAND ${PROJECT_TEST_NAME} -t box_compare)
 
 
 include_directories(../include)
-add_executable(flocksyTest testMain.cpp
+add_executable(${PROJECT_TEST_NAME} testMain.cpp
                            #../src/constants.cpp
                            ../src/hash.cpp
                            ../src/hash_tree.cpp
@@ -31,7 +31,7 @@ add_executable(flocksyTest testMain.cpp
                            #test_directory.cpp
                            #test_box.cpp
                            )
-target_link_libraries(flocksyTest ${CMAKE_THREAD_LIBS_INIT}
+target_link_libraries(${PROJECT_TEST_NAME} ${CMAKE_THREAD_LIBS_INIT}
                                   ${Boost_LIBRARIES}
                                   ${LIBSODIUM_LIBRARY}
                                   ${ZEROMQ_LIBRARY}
