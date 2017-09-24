@@ -121,7 +121,8 @@ BOOST_AUTO_TEST_CASE(hash_tree_change)
   HashTree* ht_diff = new HashTree(hashes_diff);
   ht_orig->makeHashTreeFromSelf();
   ht_diff->makeHashTreeFromSelf();
-  BOOST_CHECK( ht_orig->checkHashTreeChange(*ht_diff) );
+  BOOST_CHECK(  ht_orig->checkHashTreeChange(*ht_diff) );
+  BOOST_CHECK( !ht_orig->checkHashTreeChange(*ht_orig) );
 }
 BOOST_AUTO_TEST_CASE(hash_tree_changed_hashes)
 {
@@ -129,15 +130,19 @@ BOOST_AUTO_TEST_CASE(hash_tree_changed_hashes)
   std::shared_ptr<Hash> hash2(new Hash("test2"));
   std::vector< std::shared_ptr<Hash> > hashes_orig = { hash1, hash1, hash1 };
   std::vector< std::shared_ptr<Hash> > hashes_diff = { hash1, hash2, hash1 };
-  std::vector< std::shared_ptr<Hash> > hashes_returned;
+  std::vector< std::shared_ptr<Hash> > hashes_returned_diff;
+  std::vector< std::shared_ptr<Hash> > hashes_returned_orig;
   HashTree* ht_orig = new HashTree(hashes_orig);
   HashTree* ht_diff = new HashTree(hashes_diff);
   ht_orig->makeHashTreeFromSelf();
   ht_diff->makeHashTreeFromSelf();
 
-  ht_orig->getChangedHashes( hashes_returned, *ht_diff );
-  BOOST_CHECK_EQUAL( hashes_returned.size(), 1 );
-  BOOST_CHECK_EQUAL( hashes_returned[0], hash2 );
+  BOOST_CHECK(  ht_orig->getChangedHashes( hashes_returned_diff, *ht_diff ) );
+  BOOST_CHECK_EQUAL( hashes_returned_diff.size(), 1 );
+  BOOST_CHECK_EQUAL( hashes_returned_diff[0], hash2 );
+
+  BOOST_CHECK( !ht_orig->getChangedHashes( hashes_returned_orig, *ht_orig ) );
+  BOOST_CHECK_EQUAL( hashes_returned_orig.size(), 0 );
 }
 BOOST_AUTO_TEST_CASE(hash_tree_sort)
 {

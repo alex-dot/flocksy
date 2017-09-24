@@ -44,12 +44,6 @@ void Hash::makeHash(const std::string& string) {
         NULL, 0);
     std::memcpy(hash_, new_hash, F_GENERIC_HASH_LEN);
 }
-void Hash::initializeHash(const std::string& hash_string) {
-    hash_ = (unsigned char*)hash_string.c_str();
-}
-void Hash::initializeHash(const unsigned char* hash_bytes) {
-    std::memcpy(hash_, hash_bytes, F_GENERIC_HASH_LEN);
-}
 const std::string Hash::getString() const {
   std::stringstream sstream;
   for( uint i = 0; i < F_GENERIC_HASH_LEN; ++i ) {

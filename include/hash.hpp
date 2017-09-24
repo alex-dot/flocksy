@@ -41,8 +41,6 @@ class Hash {
   ~Hash();
 
   void makeHash(const std::string& string);
-  void initializeHash(const std::string& hash_string);
-  void initializeHash(const unsigned char* hash_bytes);
 
   const std::string getString() const;
   const unsigned char* getBytes() const;
