@@ -37,16 +37,15 @@ Box::Box(zmqpp::context* z_ctx_,
   box_hash_(new unsigned char[F_GENERIC_HASH_LEN])
   {
     tac = (char*)"box";
-    Directory* baseDir = new Directory(p);
+    Directory* baseDir = new Directory();
     std::vector< std::shared_ptr<Hash> >* hashes = new std::vector< std::shared_ptr<Hash> >;
-
+    std::vector<boost::filesystem::directory_entry> dirs;
     std::shared_ptr<Hash> hash(new Hash());
+
+    baseDir->fillDirectory(path_, dirs);
     baseDir->makeDirectoryHash(hash);
     entries_[hash->getString()] = baseDir;
     hashes->push_back(hash);
-
-    std::vector<boost::filesystem::directory_entry> dirs;
-    baseDir->fillDirectory(path_, dirs);
     recursiveDirectoryFill(hashes, dirs);
 
     HashTree* temp_ht = new HashTree();
@@ -78,13 +77,13 @@ void Box::recursiveDirectoryFill(
         dirs.begin(); i != dirs.end();
         ++i )
   {
-    Directory* directory = new Directory(*i);
+    Directory* directory = new Directory();
     std::shared_ptr<Hash> hash(new Hash());
+    std::vector<boost::filesystem::directory_entry> temp_dirs;
+    directory->fillDirectory(*i, temp_dirs);
     directory->makeDirectoryHash(hash);
     entries_.insert(std::make_pair(hash->getString(),directory));
     hashes->push_back(hash);
-    std::vector<boost::filesystem::directory_entry> temp_dirs;
-    directory->fillDirectory(*i, temp_dirs);
     recursiveDirectoryFill(hashes, temp_dirs);
   }
 }
@@ -185,16 +184,6 @@ const std::string Box::getAbsolutePathOfDirectory(int wd) const
   { return watch_descriptors_.at(wd)->getAbsolutePath(); }
 const unsigned char* Box::getBoxHash() const {
   return box_hash_;
-}
-
-void Box::recursivePrint() const
-{
-  for ( std::unordered_map<std::string,Directory*>::const_iterator i = entries_.begin();
-        i != entries_.end();
-        ++i )
-  {
-    (*i).second->printEntries();
-  }
 }
 
 void Box::printDirectories() const
