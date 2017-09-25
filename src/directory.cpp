@@ -43,10 +43,12 @@ Directory::~Directory()
 void Directory::fillDirectory(const boost::filesystem::path& document_root, 
                               std::vector<boost::filesystem::directory_entry>& dirs)
 {
-  // TODO: need EXCEPTION handling for empty hash
+  // TODO: need EXCEPTION handling for empty hash/document root
   std::vector< std::shared_ptr<Hash> > temp_hashes;
+  // TODO: how should fillDirectory() behave if path_ =/= document_root?
+  path_ = document_root;
   // iterate over the given path and write every file to entries_, return directories
-  for ( boost::filesystem::directory_iterator i = boost::filesystem::directory_iterator(document_root); 
+  for ( boost::filesystem::directory_iterator i = boost::filesystem::directory_iterator(path_); 
         i != boost::filesystem::directory_iterator(); 
         ++i )
   {
@@ -55,6 +57,7 @@ void Directory::fillDirectory(const boost::filesystem::path& document_root,
 
     else if (is_regular_file(*i))
     {
+      // TODO maybe create hash string from File class?
       std::string string_to_hash = "";
 
       // add filename to string
@@ -62,8 +65,8 @@ void Directory::fillDirectory(const boost::filesystem::path& document_root,
       std::string filename = file.filename().c_str();
       string_to_hash += filename;
 
-      // add file path relative to document_root to string
-      int document_root_length = strlen(document_root.c_str());
+      // add file path relative to path_ to string
+      int document_root_length = strlen(path_.c_str());
       std::string relative_file_path = file.c_str();
       relative_file_path = relative_file_path.substr(document_root_length,
                                                      (strlen(file.c_str())-filename.length())-document_root_length);
@@ -81,29 +84,28 @@ void Directory::fillDirectory(const boost::filesystem::path& document_root,
     }
 
     else
+      // TODO need exception handling of special files
       std::cout << "Directory: error during directory_iterator: " << *i << std::endl;
   }
   HashTree* temp_ht = new HashTree();
   temp_ht->makeHashTree(temp_hashes);
   std::swap(hash_tree_,temp_ht);
   delete temp_ht;
+  this->makeDirectoryHash();
 }
-void Directory::makeDirectoryHash(std::shared_ptr<Hash> hash)
+void Directory::makeDirectoryHash()
 {
-  std::string hash_string;
-  if ( !hash_tree_->empty() ) {
-    hash_string = hash_tree_->getTopHash()->getString();
-  } else {
-    hash_string = "";
-  }
+  std::string hash_string = hash_tree_->getTopHash()->getString();
   hash_string += this->getPath();
+  std::shared_ptr<Hash> hash(new Hash());
   hash->makeHash(hash_string);
+  directory_hash_ = hash;
 }
 
 HashTree* Directory::getHashTree() const { return hash_tree_; }
 bool Directory::checkDirectoryChange(const Directory& left) const
 {
-  return (left.getHashTree() == this->getHashTree()) ? false : true;
+  return ( *left.getDirectoryHash() == *this->getDirectoryHash() ) ? false : true;
 }
 bool Directory::getChangedEntryHashes(std::vector< std::shared_ptr<Hash> >& changed_hashes,
                        const Directory& left) const
@@ -114,24 +116,4 @@ bool Directory::getChangedEntryHashes(std::vector< std::shared_ptr<Hash> >& chan
 const std::string Directory::getPath() const { return path_.filename().c_str(); }
 const std::string Directory::getAbsolutePath() const { return path_.c_str(); }
       int         Directory::getNumberOfEntries() const { return entries_.size(); }
-
-void Directory::printHashTree() const
-{
-  std::vector< std::shared_ptr<Hash> > hashes = *(hash_tree_->getHashes());
-  for (std::vector< std::shared_ptr<Hash> >::iterator i = hashes.begin(); i != hashes.end(); ++i)
-  {
-    std::cout << (*i)->getString() << std::endl;
-  }
-}
-void Directory::printEntries() const
-{
-  std::cout << getPath() << std::endl;
-  for ( std::unordered_map<std::string, boost::filesystem::directory_entry>::const_iterator i = entries_.begin();
-        i != entries_.end();
-        ++i )
-  {
-    std::cout << i->second << std::endl;
-    std::cout << i->first << std::endl;
-    std::cout << i->second.status().permissions() << std::endl;
-  }
-}
+const std::shared_ptr<Hash> Directory::getDirectoryHash()  const { return directory_hash_; }

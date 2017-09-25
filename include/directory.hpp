@@ -24,7 +24,6 @@ class Directory
 
     void fillDirectory(const boost::filesystem::path&, 
                        std::vector<boost::filesystem::directory_entry>&);
-    void makeDirectoryHash(std::shared_ptr<Hash> hash);
 
     HashTree* getHashTree() const;
 
@@ -32,18 +31,18 @@ class Directory
     bool getChangedEntryHashes(std::vector< std::shared_ptr<Hash> >& changed_hashes,
                                const Directory& left) const;
 
-    const std::string getPath() const;
-    const std::string getAbsolutePath() const;
-          int         getNumberOfEntries() const;
-
-    void printHashTree() const;
-    void printEntries() const;
+    const std::string           getPath() const;
+    const std::string           getAbsolutePath() const;
+          int                   getNumberOfEntries() const;
+    const std::shared_ptr<Hash> getDirectoryHash() const;
 
   private:
+    void makeDirectoryHash();
+
     boost::filesystem::path path_;
     std::unordered_map<std::string,boost::filesystem::directory_entry> entries_;
     HashTree* hash_tree_;
-    Hash* directory_hash_;
+    std::shared_ptr<Hash> directory_hash_;
 };
 
 #endif
