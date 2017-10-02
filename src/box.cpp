@@ -69,6 +69,7 @@ Box::~Box()
 }
 
 void Box::recursiveDirectoryFill(
+  // TODO handle symbolic links accordingly
   std::vector< std::shared_ptr<Hash> >* hashes,
   const std::vector<boost::filesystem::directory_entry>& dirs)
 {

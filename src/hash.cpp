@@ -32,6 +32,7 @@ Hash::~Hash() {}
  *
  * Generates a cryptographic hash out of the supplied string and stores it in 
  * the hash_ member variable. Uses libsodiums generichash (Blake2) for hashes. 
+ * This overwrites any previously stored hash. 
  * 
  * \param string
  */

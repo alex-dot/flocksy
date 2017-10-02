@@ -14,6 +14,8 @@
 HashTree::~HashTree() {}
 void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
 {
+  // TODO what happens if all the hashes are the same (shared) hash?
+  //      -> to combat this, all Hash pointer should be unique_ptrs...
   // if this object already has a tree, clean up
   hashes_.clear();
   elements_per_level_.clear();
@@ -25,7 +27,7 @@ void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
   int tree_leaf_count = 1;                // the amount of leaf-nodes of the tree
   int tree_size = 1;                      // the complete amount of nodes
                                           // not counting empty leaves!
-  // this needs to be exception handled
+  // TODO this needs to be exception handled
   // e.g. directories with more than 65535 files will fail
   // this check is optimised so that the result gets
   // rounded up: http://stackoverflow.com/a/2745086/876584
@@ -37,45 +39,48 @@ void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
   }
 
   std::vector< std::shared_ptr<Hash> > hashes;
-  hashes.reserve(tree_size+1);
-  int node_count = 0;
-  for ( int i = tree_depth; i >= 0; --i )
+  if ( hash_count > 0 )
   {
-    int temp_node_count = 0;
-    // on the lowest level, copy the element hashes
-    if ( i == tree_depth )
+    hashes.reserve(tree_size+1);
+    int node_count = 0;
+    for ( int i = tree_depth; i >= 0; --i )
     {
-      for (int j = 0; j < hash_count; ++j)
+      int temp_node_count = 0;
+      // on the lowest level, copy the element hashes
+      if ( i == tree_depth )
       {
-        hashes.push_back(temp_hashes[j]);
-      }
-      temp_node_count = hash_count;
-    } else {
-      // for each higher level, create hashes of two lower nodes
-      for (int j = 0; j < (1 << i); ++j)
-      { 
-        int offset = 2 * j;
-        int curr_item = node_count + offset;
-        // if we have an odd number of lower nodes, simply double the left hash
-        if ( (elements_per_level_.back() - (offset+2)) >= 0 )
+        for (int j = 0; j < hash_count; ++j)
         {
-          std::string string = hashes[curr_item]->getString();
-          string += hashes[curr_item+1]->getString();
-          std::shared_ptr<Hash> hash(new Hash(string));
-          hashes.push_back(hash);
-          ++temp_node_count;
-        } else if ( ((offset+2) - elements_per_level_.back() == 1) ) {
-          std::string string = hashes[curr_item]->getString();
-          std::shared_ptr<Hash> hash(new Hash(string+string));
-          hashes.push_back(hash);
-          ++temp_node_count;
+          hashes.push_back(temp_hashes[j]);
         }
+        temp_node_count = hash_count;
+      } else {
+        // for each higher level, create hashes of two lower nodes
+        for (int j = 0; j < (1 << i); ++j)
+        { 
+          int offset = 2 * j;
+          int curr_item = node_count + offset;
+          // if we have an odd number of lower nodes, simply double the left hash
+          if ( (elements_per_level_.back() - (offset+2)) >= 0 )
+          {
+            std::string string = hashes[curr_item]->getString();
+            string += hashes[curr_item+1]->getString();
+            std::shared_ptr<Hash> hash(new Hash(string));
+            hashes.push_back(hash);
+            ++temp_node_count;
+          } else if ( ((offset+2) - elements_per_level_.back() == 1) ) {
+            std::string string = hashes[curr_item]->getString();
+            std::shared_ptr<Hash> hash(new Hash(string+string));
+            hashes.push_back(hash);
+            ++temp_node_count;
+          }
+        }
+        node_count += elements_per_level_.back();
       }
-      node_count += elements_per_level_.back();
+      elements_per_level_.push_back(temp_node_count);
     }
-    elements_per_level_.push_back(temp_node_count);
+    hashes.shrink_to_fit();
   }
-  hashes.shrink_to_fit();
   hashes_.swap(hashes);
 }
 void HashTree::makeHashTreeFromSelf()

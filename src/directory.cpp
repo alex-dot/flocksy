@@ -6,6 +6,7 @@
 #include "directory.hpp"
 #include "hash.hpp"
 #include "hash_tree.hpp"
+#include "constants.hpp"
 
 #include <boost/filesystem.hpp>
 #include <vector>
@@ -43,56 +44,35 @@ Directory::~Directory()
 void Directory::fillDirectory(const boost::filesystem::path& document_root, 
                               std::vector<boost::filesystem::directory_entry>& dirs)
 {
+  // first define document_root the directory's root path
+  path_ = document_root;
+
   // TODO: need EXCEPTION handling for empty hash/document root
   std::vector< std::shared_ptr<Hash> > temp_hashes;
-  // TODO: how should fillDirectory() behave if path_ =/= document_root?
-  path_ = document_root;
+
   // iterate over the given path and write every file to entries_, return directories
   for ( boost::filesystem::directory_iterator i = boost::filesystem::directory_iterator(path_); 
         i != boost::filesystem::directory_iterator(); 
         ++i )
   {
-    if (is_directory(*i))
-      dirs.push_back(*i);
-
-    else if (is_regular_file(*i))
+    try
     {
-      // TODO maybe create hash string from File class?
-      std::string string_to_hash = "";
-
-      // add filename to string
-      boost::filesystem::path file = i->path();
-      std::string filename = file.filename().c_str();
-      string_to_hash += filename;
-
-      // add file path relative to path_ to string
-      int document_root_length = strlen(path_.c_str());
-      std::string relative_file_path = file.c_str();
-      relative_file_path = relative_file_path.substr(document_root_length,
-                                                     (strlen(file.c_str())-filename.length())-document_root_length);
-      string_to_hash += relative_file_path;
-
-      // add timestamp to string
-      string_to_hash += std::to_string(boost::filesystem::last_write_time(file));
-
-      // make hash
-      std::shared_ptr<Hash> hash(new Hash(string_to_hash));
-      temp_hashes.push_back(hash);
-
-      // insert into entries_
-      entries_.insert(std::make_pair(hash->getString(),*i));
+      this->processDirectoryEntry(*i, temp_hashes, dirs);
     }
-
-    else
-      // TODO need exception handling of special files
-      std::cout << "Directory: error during directory_iterator: " << *i << std::endl;
+    catch (const std::runtime_error& err)
+    {
+      printf("You have an error in your filesystem! \n");
+      throw;
+    }
   }
+  std::cout << temp_hashes.size() << std::endl;
   HashTree* temp_ht = new HashTree();
   temp_ht->makeHashTree(temp_hashes);
   std::swap(hash_tree_,temp_ht);
   delete temp_ht;
   this->makeDirectoryHash();
 }
+
 void Directory::makeDirectoryHash()
 {
   std::string hash_string = hash_tree_->getTopHash()->getString();
@@ -100,6 +80,49 @@ void Directory::makeDirectoryHash()
   std::shared_ptr<Hash> hash(new Hash());
   hash->makeHash(hash_string);
   directory_hash_ = hash;
+}
+void Directory::processDirectoryEntry(const boost::filesystem::directory_entry& entry,
+                                      std::vector< std::shared_ptr<Hash> >& temp_hashes,
+                                      std::vector<boost::filesystem::directory_entry>& dirs)
+{
+  if (is_directory(entry))
+    dirs.push_back(entry);
+
+  else if (is_regular_file(entry))
+  {
+    std::string string_to_hash = "";
+
+    // add filename to string
+    boost::filesystem::path file = entry.path();
+    std::string filename = file.filename().c_str();
+    string_to_hash += filename;
+
+    // add file path relative to path_ to string
+    int document_root_length = strlen(path_.c_str());
+    std::string relative_file_path = file.c_str();
+    relative_file_path = relative_file_path.substr(document_root_length,
+                                                   (strlen(file.c_str())-filename.length())-document_root_length);
+    string_to_hash += relative_file_path;
+
+    // add timestamp to string
+    string_to_hash += std::to_string(boost::filesystem::last_write_time(file));
+
+    // make hash
+    std::shared_ptr<Hash> hash(new Hash(string_to_hash));
+    temp_hashes.push_back(hash);
+
+    // insert into entries_
+    entries_.insert(std::make_pair(hash->getString(),entry));
+  }
+
+  else if (is_symlink(entry))
+  {
+    boost::filesystem::directory_entry sl(read_symlink(entry));
+    this->processDirectoryEntry(sl, temp_hashes, dirs);
+  }
+
+  else
+    if (F_MSG_DEBUG) printf("dir: special file ignored");
 }
 
 HashTree* Directory::getHashTree() const { return hash_tree_; }

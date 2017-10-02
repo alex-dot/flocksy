@@ -38,6 +38,9 @@ class Directory
 
   private:
     void makeDirectoryHash();
+    void processDirectoryEntry(const boost::filesystem::directory_entry& entry,
+                               std::vector< std::shared_ptr<Hash> >& temp_hashes,
+                               std::vector<boost::filesystem::directory_entry>& dirs);
 
     boost::filesystem::path path_;
     std::unordered_map<std::string,boost::filesystem::directory_entry> entries_;
