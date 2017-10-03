@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <string>
 
+#include "constants.hpp"
 #include "hash.hpp"
 #include "hash_tree.hpp"
 
@@ -36,16 +37,21 @@ class Directory
           int                   getNumberOfEntries() const;
     const std::shared_ptr<Hash> getDirectoryHash() const;
 
+    void setSymlinkHandling(symlink_handling_t);
+
   private:
     void makeDirectoryHash();
     void processDirectoryEntry(const boost::filesystem::directory_entry& entry,
                                std::vector< std::shared_ptr<Hash> >& temp_hashes,
                                std::vector<boost::filesystem::directory_entry>& dirs);
+    void processRegularFileEntry(const boost::filesystem::directory_entry& entry,
+                                 std::vector< std::shared_ptr<Hash> >& temp_hashes);
 
     boost::filesystem::path path_;
     std::unordered_map<std::string,boost::filesystem::directory_entry> entries_;
     HashTree* hash_tree_;
     std::shared_ptr<Hash> directory_hash_;
+    symlink_handling_t symlinks_;
 };
 
 #endif

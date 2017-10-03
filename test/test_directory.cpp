@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include "directory.hpp"
+
 #include <string>
 
 // fillDirectory
@@ -57,4 +58,51 @@ BOOST_AUTO_TEST_CASE(directory_compare)
   BOOST_CHECK(  dir1.checkDirectoryChange(dir3) );
   dir1.getChangedEntryHashes(hashes, dir3);
   BOOST_CHECK_EQUAL( 1, hashes.size() );
+}
+
+struct configureSymlinks {
+  configureSymlinks() : p(boost::filesystem::current_path().string() + "/../../test/testdir") {}
+  ~configureSymlinks() {
+    boost::filesystem::remove( boost::filesystem::path(p.string()+"/symlink1") );
+    boost::filesystem::remove( boost::filesystem::path(p.string()+"/symlink2") );
+    boost::filesystem::remove( boost::filesystem::path(p.string()+"/symlink3") );
+  }
+
+  boost::filesystem::path p;
+};
+BOOST_AUTO_TEST_CASE(directory_symlinks)
+{
+  configureSymlinks cs;
+  std::vector<boost::filesystem::directory_entry> dirs;
+
+  Directory dir_no_symlinks(cs.p);
+
+  // create symlink ./symlink1 -> ./bar          # can increment element count => TODO: currently broken, b/c Hash non-uniqueness
+  boost::filesystem::create_symlink( boost::filesystem::path(cs.p.string()+"/bar"), 
+                                     boost::filesystem::path(cs.p.string()+"/symlink1") );
+  // create symlink ./symlink2 -> ./testdir2     # shouldn't increment element count (directories are ignored)
+  boost::filesystem::create_symlink( boost::filesystem::path(cs.p.string()+"/testdir2"), 
+                                     boost::filesystem::path(cs.p.string()+"/symlink2") );
+  // create symlink ./symlink3 -> ./testdir/bar  # should increment element count
+  boost::filesystem::create_symlink( boost::filesystem::path(cs.p.string()+"/testdir/bar"), 
+                                     boost::filesystem::path(cs.p.string()+"/symlink3") );
+
+  // default symlink handling: F_SYMLINK_DEFAULT == F_SYMLINK_FOLLOW
+  // noe = original (3) + symlink1 (0) + symlink2 (0) + symlink3 (1) = 4
+  Directory dir_default(cs.p);
+  BOOST_CHECK_EQUAL( dir_default.getNumberOfEntries(), dir_no_symlinks.getNumberOfEntries() + 1 );
+
+  // copy symlink handling: F_SYMLINK_COPY
+  // noe = original (3) + symlink1 (1) + symlink2 (1) + symlink3 (1) = 6
+  Directory dir_copy = Directory();
+  dir_copy.setSymlinkHandling(F_SYMLINK_COPY);
+  dir_copy.fillDirectory(cs.p,dirs);
+  BOOST_CHECK_EQUAL( dir_copy.getNumberOfEntries(),    dir_no_symlinks.getNumberOfEntries() + 3 );
+
+  // ignore symlink handling: F_SYMLINK_IGNORE
+  // noe = original (3) + symlink1 (0) + symlink2 (0) + symlink3 (0) = 3
+  Directory dir_ignore = Directory();
+  dir_ignore.setSymlinkHandling(F_SYMLINK_IGNORE);
+  dir_ignore.fillDirectory(cs.p,dirs);
+  BOOST_CHECK_EQUAL( dir_ignore.getNumberOfEntries(),  dir_no_symlinks.getNumberOfEntries() + 0 );
 }

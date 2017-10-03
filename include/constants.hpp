@@ -69,7 +69,16 @@ enum F_BACKUP_TYPE {
 #define F_MAXIMUM_PATH_LENGTH 128
 #define F_MAXIMUM_FILE_PACKAGE_SIZE 4096
 
-// basic structs
+// Box configuration parameters
+enum F_SYMLINK_HANDLING {
+  F_SYMLINK_FOLLOW = 0,
+  F_SYMLINK_IGNORE = 1,
+  F_SYMLINK_COPY   = 2
+};
+#define F_SYMLINK_DEFAULT F_SYMLINK_FOLLOW
+typedef enum F_SYMLINK_HANDLING symlink_handling_t;
+
+// configuration base types
 // TODO What if I have multiple publishers? Nodes must have a way to query the correct host keypair...
 struct node_t {
   std::string   endpoint;
@@ -86,8 +95,10 @@ struct host_t {
   std::string           uid;
 };
 struct box_t {
-  unsigned char uid[F_GENERIC_HASH_LEN];
-  std::string   base_path;
+  box_t() : symlinks(F_SYMLINK_DEFAULT) {}
+  unsigned char       uid[F_GENERIC_HASH_LEN];
+  std::string         base_path;
+  symlink_handling_t  symlinks;
 };
 
 typedef std::unordered_map< Hash*,
