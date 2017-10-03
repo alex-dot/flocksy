@@ -1,0 +1,14 @@
+#
+# Config file for flocksy
+# 
+
+[program]
+hostname = ipc:///tmp/node1.ipc
+node = ipc:///tmp/node2.ipc
+box = mainbox@/tmp/testdir1
+
+[mainbox]
+{
+    "base_path" : "/tmp/testdir1",dwad
+    "symlinks"  : '0'               // 0=follow, 1=ignore, 2=copy
+}
