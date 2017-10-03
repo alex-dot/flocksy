@@ -76,7 +76,10 @@ int Config::initialize(int argc, char* argv[])
         if ( !ifs ) {
             if (F_MSG_DEBUG) printf("config: no config file found\n");
         } else {
-            po::store(po::parse_config_file(ifs, generic_options), c->vm_);
+            std::string ifstring(std::istreambuf_iterator<char>(ifs),{});
+            c->readConfigFile(ifstring);
+            std::stringstream ifstream(ifstring);
+            po::store(po::parse_config_file(ifstream, generic_options), c->vm_);
             po::notify(c->vm_);
             ifs.close();
         }
@@ -145,7 +148,7 @@ const zmqpp::curve::keypair
   Config::getHostKeypair() const {
     return hosts_[0].keypair;
 }
-const std::vector< box_t >
+const std::map< std::string, box_t >
     Config::getBoxes() const {
         return boxes_;
 }
@@ -270,7 +273,7 @@ int Config::doSanityCheck(boost::program_options::options_description* options,
             std::stringstream box_path_sstream;
             std::string box_name_string, box_path, box_path_temp;
             std::getline(box_string, box_name_string, '@');
-            Hash box_name(box_name_string);
+            Hash box_hash(box_name_string);
             std::getline(box_string, box_path_temp, '@');
             box_path_sstream << box_path_temp;
             while(std::getline(box_string, box_path_temp, '@')) {
@@ -278,29 +281,13 @@ int Config::doSanityCheck(boost::program_options::options_description* options,
             }
             box_path = box_path_sstream.str();
 
-            // check if the box locations map to directories on the filesystem
-            if ( !boost::filesystem::is_directory(box_path) ) {
-                std::cerr << "[E] " << box_path << " is not a directory." << std::endl;
-                return 1;
+            if ( updateBoxMap(box_hash, box_path, box_name_string) == 0 ) {
+                // add new box to Config
+                box_t new_box;
+                std::memcpy(new_box.uid, box_hash.getBytes(), F_GENERIC_HASH_LEN);
+                new_box.base_path = box_path;
+                this->boxes_[box_name_string] = new_box;
             }
-            // check if the box location is already mapped or the box name has already been claimed
-            for (std::vector<box_t>::iterator j = this->boxes_.begin();
-                 j != this->boxes_.end(); ++j) {
-                if (std::memcmp(box_name.getBytes(), j->uid, F_GENERIC_HASH_LEN) == 0 ) {
-                    std::cerr << "[E] " << box_name.getBytes() << " is already used." << std::endl;
-                    return 1;
-                }
-                if (box_path == j->base_path) {
-                    std::cerr << "[E] " << box_path << " is already mapped." << std::endl;
-                    return 1;
-                }
-            }
-
-            // add new box strings to Config
-            box_t new_box;
-            std::memcpy(new_box.uid, box_name.getBytes(), F_GENERIC_HASH_LEN);
-            new_box.base_path = box_path;
-            this->boxes_.push_back( new_box );
         }
     } else {
         perror("[E] No box locations supplied, exiting...");
@@ -384,6 +371,94 @@ int Config::synchronizeKeystore( std::string* keystore_file,
         Hash* hash = new Hash(i->public_key);
         std::memcpy(i->uid, hash->getBytes(), F_GENERIC_HASH_LEN);
         nodes_.insert( std::make_pair(hash, *i) );
+    }
+
+    return 0;
+}
+
+int Config::readConfigFile(std::string& configfile)
+{
+    int return_val = 0;
+    std::map< std::string, std::stringstream* > block;
+    bool first_block_initialized = false;
+    std::string current_block;
+    std::string line;
+    std::stringstream ifstream(configfile);
+    while(std::getline(ifstream, line)) {
+        if ( !line.empty() && line.substr(0,1) != "#" ) {
+            if ( line.substr(0,1) == "[" ) {
+                std::stringstream* sstream = new std::stringstream();
+                current_block = line.substr( 1, line.find("]")-1 );
+                block[current_block] = sstream;
+                first_block_initialized = true;
+            } else if ( first_block_initialized ) {
+                *block[current_block] << line << std::endl;
+            }
+        }
+    }
+    for( std::map< std::string, std::stringstream* >::iterator i = block.begin(); i != block.end(); ++i ) {
+        if ( i->first == "program" ) {
+            configfile = i->second->str();
+        } else {
+            return_val = parseBoxConfiguration( i->first, i->second->str() );
+        }
+    }
+
+    return return_val;
+}
+
+int Config::parseBoxConfiguration(std::string box_name, std::string box_config_string)
+{
+    Hash box_hash(box_name);
+
+    Json::Value  box_config;
+    Json::Reader json_reader;
+    if( !json_reader.parse( box_config_string, box_config ) )
+    {
+        std::cerr << "[E] error parsing configuration file, error at block: " << box_name << std::endl;
+        return 1;
+    }
+
+    std::string box_path = box_config.get("base_path","").asString();
+
+    if ( updateBoxMap(box_hash, box_path, box_name) == 0 ) {
+        // add new box to Config
+        box_t new_box;
+
+        std::memcpy(new_box.uid, box_hash.getBytes(), F_GENERIC_HASH_LEN);
+        new_box.base_path = box_path;
+        new_box.symlinks = static_cast<symlink_handling_t>(box_config.get("symlinks",F_SYMLINK_DEFAULT).asInt());
+
+        this->boxes_[box_name] = new_box;
+    }
+
+    return 0;
+}
+
+int Config::updateBoxMap(Hash& box_hash, std::string box_path, std::string box_name_string)
+{
+    // check if the box locations map to directories on the filesystem
+    if ( !box_path.empty() && !boost::filesystem::is_directory(box_path) ) {
+        std::cerr << "[E] " << box_path << " is not a directory." << std::endl;
+        return 1;
+    }
+
+    // check if the box location is already mapped or the box name has already been claimed
+    for (std::map<std::string,box_t>::iterator j = this->boxes_.begin();
+         j != this->boxes_.end(); ++j) {
+        if (box_hash.getString() == j->first) {
+            if (j->second.base_path.empty() && box_path.empty()) {
+                std::cerr << "[E] " << box_path << " is not a directory." << std::endl;
+                return 1;
+            } else if (j->second.base_path.empty() && !box_path.empty()) {
+                j->second.base_path = box_path;
+            } else {
+                std::cerr << "[E] " << box_name_string << " is already claimed." << std::endl;
+            }
+        } else if (box_path == j->second.base_path) {
+            std::cerr << "[E] " << box_path << " is already mapped." << std::endl;
+            return 1;
+        }
     }
 
     return 0;

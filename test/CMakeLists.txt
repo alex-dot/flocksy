@@ -15,6 +15,7 @@ add_test(NAME hash_tree_elements_per_level COMMAND ${PROJECT_TEST_NAME} -t hash_
 add_test(NAME directory_constructors COMMAND ${PROJECT_TEST_NAME} -t directory_constructors)
 add_test(NAME directory_gethashtree COMMAND ${PROJECT_TEST_NAME} -t directory_gethashtree)
 add_test(NAME directory_compare COMMAND ${PROJECT_TEST_NAME} -t directory_compare)
+add_test(NAME directory_symlinks COMMAND ${PROJECT_TEST_NAME} -t directory_symlinks)
 
 # add_test(NAME box_test COMMAND ${PROJECT_TEST_NAME} -t box_test)
 #add_test(NAME box_compare COMMAND ${PROJECT_TEST_NAME} -t box_compare)
@@ -22,7 +23,8 @@ add_test(NAME directory_compare COMMAND ${PROJECT_TEST_NAME} -t directory_compar
 
 include_directories(../include)
 add_executable(${PROJECT_TEST_NAME} testMain.cpp
-                           #../src/constants.cpp
+                           ../src/constants.cpp
+                           ../src/config.cpp
                            ../src/hash.cpp
                            ../src/hash_tree.cpp
                            ../src/directory.cpp

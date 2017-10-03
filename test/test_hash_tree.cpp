@@ -187,4 +187,11 @@ BOOST_AUTO_TEST_CASE(hash_tree_elements_per_level)
   BOOST_CHECK_EQUAL(epl[1],3);
   BOOST_CHECK_EQUAL(epl[2],2);
   BOOST_CHECK_EQUAL(epl[3],1);
+  
+  std::vector< std::shared_ptr<Hash> > h = {hash1, hash1, hash2, hash1};
+  std::cout << h.size() << std::endl;
+  std::unique(h.begin(), h.end());
+  std::cout << h.size() << std::endl;
+  std::cout << hash1.use_count() << std::endl;
+  BOOST_CHECK(false);
 }
