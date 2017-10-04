@@ -21,7 +21,7 @@ Directory::Directory() :
   path_(),
   entries_(),
   hash_tree_(),
-  directory_hash_(),
+  directory_hash_(std::shared_ptr<Hash>(new Hash())),
   symlinks_(F_SYMLINK_DEFAULT)
   {}
 
@@ -29,7 +29,7 @@ Directory::Directory(const boost::filesystem::path& p) :
   path_(p),
   entries_(),
   hash_tree_(),
-  directory_hash_(),
+  directory_hash_(std::shared_ptr<Hash>(new Hash())),
   symlinks_(F_SYMLINK_DEFAULT)
   {
     std::vector<boost::filesystem::directory_entry> dirs;
@@ -78,9 +78,7 @@ void Directory::makeDirectoryHash()
 {
   std::string hash_string = hash_tree_->getTopHash()->getString();
   hash_string += this->getPath();
-  std::shared_ptr<Hash> hash(new Hash());
-  hash->makeHash(hash_string);
-  directory_hash_ = hash;
+  directory_hash_->makeHash(hash_string);
 }
 void Directory::processDirectoryEntry(const boost::filesystem::directory_entry& entry,
                                       std::vector< std::shared_ptr<Hash> >& temp_hashes,
