@@ -30,15 +30,23 @@ BOOST_AUTO_TEST_CASE(directory_constructors)
 }
 BOOST_AUTO_TEST_CASE(directory_gethashtree)
 {
-  Directory* dir;
   boost::filesystem::path p = boost::filesystem::current_path().string() + "/../../test/testdir";
-  dir = new Directory(p);
+
+  // initialized
+  Directory* dir_init = new Directory(p);
+  // unitialized
+  Directory* dir_decl = new Directory();
+  std::vector<boost::filesystem::directory_entry> dirs;
+  dir_decl->fillDirectory(p, dirs);
+
   // Value generated with pyblake2
   std::string hash_string = "5ec455de0fcb893374c1b8b4b6569734ab439dd93cefa80f243e1d8d93131c4daf780d5b3f6cde9c72411cf9cfafd85813834957b16a7da1bd894efd25dc90c1";
-  BOOST_CHECK_EQUAL( dir->getHashTree()->getTopHash()->getString(), hash_string );
+  BOOST_CHECK_EQUAL( dir_init->getHashTree()->getTopHash()->getString(), hash_string );
+  BOOST_CHECK_EQUAL( dir_decl->getHashTree()->getTopHash()->getString(), hash_string );
   hash_string += p.filename().c_str();
   std::shared_ptr<Hash> testhash(new Hash(hash_string));
-  BOOST_CHECK_EQUAL( dir->getDirectoryHash()->getString(), testhash->getString() );
+  BOOST_CHECK_EQUAL( dir_init->getDirectoryHash()->getString(), testhash->getString() );
+  BOOST_CHECK_EQUAL( dir_decl->getDirectoryHash()->getString(), testhash->getString() );
 }
 BOOST_AUTO_TEST_CASE(directory_compare)
 {
