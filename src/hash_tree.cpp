@@ -92,7 +92,17 @@ void HashTree::makeHashTreeFromSelf()
 
 bool HashTree::empty() const { return hashes_.empty(); }
 const std::vector< std::shared_ptr<Hash> >* HashTree::getHashes() const { return &hashes_; }
-std::shared_ptr<Hash> HashTree::getTopHash() const { return hashes_.back(); }
+std::shared_ptr<Hash> HashTree::getTopHash() const
+{
+  std::shared_ptr<Hash> hash;
+  if ( !hashes_.empty() )
+  {
+    hash = hashes_.back();
+  } else {
+    hash = std::make_shared<Hash>();
+  }
+  return hash;
+}
 
 
 bool HashTree::checkHashTreeChange(const HashTree& lhs) const

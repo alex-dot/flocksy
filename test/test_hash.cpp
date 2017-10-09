@@ -30,14 +30,17 @@ BOOST_AUTO_TEST_CASE(hash_structors)
   transformPrecomputedHash( precomputed_hash_char, &isstream );
 
   // 3 cases:
-  // - uninitialized (no need to check)
+  // - uninitialized
+  Hash hash1 = Hash();
+  BOOST_CHECK( hash1.empty() );
+
   // - initialized w/ unsigned char
-  Hash hash1 = Hash(precomputed_hash_char);
-  BOOST_CHECK(memcmp(precomputed_hash_char, hash1.getBytes(), F_GENERIC_HASH_LEN) == 0);
+  Hash hash2 = Hash(precomputed_hash_char);
+  BOOST_CHECK(memcmp(precomputed_hash_char, hash2.getBytes(), F_GENERIC_HASH_LEN) == 0);
 
   // - initialized w/ string
-  Hash hash2 = Hash(hash_string);
-  BOOST_CHECK(memcmp(precomputed_hash_char, hash2.getBytes(), F_GENERIC_HASH_LEN) == 0);
+  Hash hash3 = Hash(hash_string);
+  BOOST_CHECK(memcmp(precomputed_hash_char, hash3.getBytes(), F_GENERIC_HASH_LEN) == 0);
 }
 BOOST_AUTO_TEST_CASE(hash_makeHash)
 {
@@ -94,4 +97,12 @@ BOOST_AUTO_TEST_CASE(hash_compare)
   BOOST_CHECK( (hash1 <= hash2));
   BOOST_CHECK(!(hash1 >  hash2));
   BOOST_CHECK(!(hash1 >= hash2));
+
+  Hash hash3 = Hash();
+  BOOST_CHECK(!(hash1 == hash3));
+  BOOST_CHECK(  hash1 != hash3);
+  BOOST_CHECK( (hash1 <  hash3));
+  BOOST_CHECK( (hash1 <= hash3));
+  BOOST_CHECK(!(hash1 >  hash3));
+  BOOST_CHECK(!(hash1 >= hash3));
 }

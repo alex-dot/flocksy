@@ -48,7 +48,6 @@ void Directory::fillDirectory(const boost::filesystem::path& document_root,
   // first define document_root the directory's root path
   path_ = document_root;
 
-  // TODO: need EXCEPTION handling for empty hash/document root
   std::vector< std::shared_ptr<Hash> > temp_hashes;
 
   // iterate over the given path and write every file to entries_, return directories

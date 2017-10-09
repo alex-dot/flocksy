@@ -28,6 +28,11 @@ BOOST_AUTO_TEST_CASE(hash_tree_empty)
 {
   HashTree* ht = new HashTree();
   BOOST_CHECK( ht->empty() );
+
+  std::vector< std::shared_ptr<Hash> > hashes = {};
+  ht->makeHashTree(hashes);
+  BOOST_CHECK( ht->empty() );
+  BOOST_CHECK( ht->getTopHash()->empty() );
   delete ht;
 }
 BOOST_AUTO_TEST_CASE(hash_tree_size_compare)

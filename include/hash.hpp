@@ -44,9 +44,11 @@ class Hash {
 
   const std::string getString() const;
   const unsigned char* getBytes() const;
+        bool empty() const;
 
  private:
   unsigned char* hash_;
+  bool           empty_;
 
   friend bool operator<  (const Hash&, const Hash&);
   friend bool operator>  (const Hash&, const Hash&);
