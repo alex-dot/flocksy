@@ -3,7 +3,7 @@
 read -r -p "Installing Dependencies...? [y/N] " response
 if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
 then
-    sudo apt-get install g++ build-essential libtool autoconf pkg-config libboost-system-dev libboost-filesystem-dev libboost-test-dev libboost-thread-dev libboost-program-options-dev cmake libjsoncpp-dev libsodium-dev git wget
+    sudo apt-get install g++ build-essential libtool autoconf pkg-config libboost-system-dev libboost-filesystem-dev libboost-test-dev libboost-thread-dev libboost-program-options-dev cmake libjsoncpp-dev libsodium-dev git wget lcov
     if [[ $? > 0 ]]
     then
         echo "Installation failed, exiting."
@@ -43,6 +43,7 @@ mkdir -p /tmp/testdir2
 mkdir -p /tmp/testdir3
 
 echo "Downloading Blake2b test vectors"
+cd ../repos
 wget https://raw.githubusercontent.com/BLAKE2/BLAKE2/master/testvectors/blake2-kat.json -O blake2-kat.json
 
 echo "All set!"
