@@ -15,7 +15,6 @@ HashTree::~HashTree() {}
 void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
 {
   // TODO what happens if all the hashes are the same (shared) hash?
-  //      -> to combat this, all Hash pointer should be unique_ptrs...
   // if this object already has a tree, clean up
   hashes_.clear();
   elements_per_level_.clear();
