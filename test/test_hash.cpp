@@ -97,12 +97,4 @@ BOOST_AUTO_TEST_CASE(hash_compare)
   BOOST_CHECK( (hash1 <= hash2));
   BOOST_CHECK(!(hash1 >  hash2));
   BOOST_CHECK(!(hash1 >= hash2));
-
-  Hash hash3 = Hash();
-  BOOST_CHECK(!(hash1 == hash3));
-  BOOST_CHECK(  hash1 != hash3);
-  BOOST_CHECK( (hash1 <  hash3));
-  BOOST_CHECK( (hash1 <= hash3));
-  BOOST_CHECK(!(hash1 >  hash3));
-  BOOST_CHECK(!(hash1 >= hash3));
 }

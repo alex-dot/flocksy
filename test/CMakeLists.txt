@@ -11,6 +11,7 @@ add_test(NAME hash_tree_changed_hashes COMMAND ${PROJECT_TEST_NAME} -t hash_tree
 add_test(NAME hash_tree_sort COMMAND ${PROJECT_TEST_NAME} -t hash_tree_sort)
 add_test(NAME hash_tree_top_hash COMMAND ${PROJECT_TEST_NAME} -t hash_tree_top_hash)
 add_test(NAME hash_tree_elements_per_level COMMAND ${PROJECT_TEST_NAME} -t hash_tree_elements_per_level)
+add_test(NAME hash_tree_elements_per_level_nonunique COMMAND ${PROJECT_TEST_NAME} -t hash_tree_elements_per_level_nonunique)
 
 add_test(NAME directory_constructors COMMAND ${PROJECT_TEST_NAME} -t directory_constructors)
 add_test(NAME directory_gethashtree COMMAND ${PROJECT_TEST_NAME} -t directory_gethashtree)

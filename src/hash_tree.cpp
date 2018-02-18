@@ -14,12 +14,14 @@
 HashTree::~HashTree() {}
 void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
 {
-  // TODO what happens if all the hashes are the same (shared) hash?
   // if this object already has a tree, clean up
   hashes_.clear();
   elements_per_level_.clear();
 
   std::sort (temp_hashes.begin(), temp_hashes.end(), hashSharedPointerLessThanFunctor());
+  std::vector< std::shared_ptr<Hash> >::iterator end_iter =
+    std::unique(temp_hashes.begin(), temp_hashes.end());
+  temp_hashes.erase(end_iter, temp_hashes.end());
 
   int hash_count = temp_hashes.size();
   int tree_depth = 0;                     // the depth of the tree
@@ -56,7 +58,7 @@ void HashTree::makeHashTree(std::vector< std::shared_ptr<Hash> > temp_hashes)
       } else {
         // for each higher level, create hashes of two lower nodes
         for (int j = 0; j < (1 << i); ++j)
-        { 
+        {
           int offset = 2 * j;
           int curr_item = node_count + offset;
           // if we have an odd number of lower nodes, simply double the left hash
@@ -108,11 +110,11 @@ bool HashTree::checkHashTreeChange(const HashTree& lhs) const
 {
   if ( lhs.getTopHash()->getString() != hashes_.back()->getString() )
     return true;
-  else 
+  else
     return false;
 }
 
-bool HashTree::getChangedHashes(std::vector< std::shared_ptr<Hash> >& changed_hashes, 
+bool HashTree::getChangedHashes(std::vector< std::shared_ptr<Hash> >& changed_hashes,
                                 const HashTree& lhs) const
 {
   if (this->checkHashTreeChange(lhs))
@@ -136,8 +138,8 @@ bool HashTree::getChangedHashes(std::vector< std::shared_ptr<Hash> >& changed_ha
     it = std::unique_copy (right_hashes.begin(), right_hashes.end(), right_hashes_unique.begin(), hashSharedPointerEqualsFunctor());
     right_hashes_unique.resize(std::distance(right_hashes_unique.begin(),it));
 
-    it = set_symmetric_difference(left_hashes_unique.begin(), left_hashes_unique.end(), 
-                                  right_hashes_unique.begin(), right_hashes_unique.end(), 
+    it = set_symmetric_difference(left_hashes_unique.begin(), left_hashes_unique.end(),
+                                  right_hashes_unique.begin(), right_hashes_unique.end(),
                                   changed_hashes.begin(), hashSharedPointerLessThanFunctor());
 
     changed_hashes.resize(std::distance(changed_hashes.begin(),it));

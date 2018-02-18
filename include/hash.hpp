@@ -1,12 +1,12 @@
 /**
  * \file      hash.hpp
- * \brief     Provides a wrapper class for generating file hashes. 
+ * \brief     Provides a wrapper class for generating file hashes.
  *
  *  dkjandjkawndjkawndkjawndkajn
- * 
+ *
  * \author    Alexander Herr
  * \date      2016
- * \copyright GNU Public License v3 or higher. 
+ * \copyright GNU Public License v3 or higher.
  */
 
 #ifndef INCLUDE_HASH_HPP_
@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <memory>
 #include <cstring>
+#include <stdexcept>
 
 #include <iostream>
 
@@ -27,8 +28,8 @@
  *
  * A wrapper class for the used hashing algorithms so hashed strings or other
  * hashable arrays can be used and stored as objects. Additionally it provides
- * operators for "hash comparison" so hashes can be sorted, which makes 
- * hash-trees possible. 
+ * operators for "hash comparison" so hashes can be sorted, which makes
+ * hash-trees possible.
  *
  * \todo Maybe store byte arrays instead of std::strings?
  * \todo Make other hashable arrays possible for hash generation
@@ -59,42 +60,61 @@ class Hash {
 };
 
 inline bool operator<  (const Hash& lhs, const Hash& rhs) {
+  if (lhs.empty() || rhs.empty()) throw std::runtime_error("Comparing empty Hash");
   return (memcmp(lhs.hash_, rhs.hash_, F_GENERIC_HASH_LEN) < 0)? true : false;
 }
-inline bool operator>  (const Hash& lhs, const Hash& rhs)
-  { return rhs < lhs; }
-inline bool operator<= (const Hash& lhs, const Hash& rhs)
-  { return !(lhs > rhs); }
-inline bool operator>= (const Hash& lhs, const Hash& rhs)
-  { return !(lhs < rhs); }
+inline bool operator>  (const Hash& lhs, const Hash& rhs) {
+  if (lhs.empty() || rhs.empty()) throw std::runtime_error("Comparing empty Hash");
+  return rhs < lhs;
+}
+inline bool operator<= (const Hash& lhs, const Hash& rhs) {
+  if (lhs.empty() || rhs.empty()) throw std::runtime_error("Comparing empty Hash");
+  return !(lhs > rhs);
+}
+inline bool operator>= (const Hash& lhs, const Hash& rhs) {
+  if (lhs.empty() || rhs.empty()) throw std::runtime_error("Comparing empty Hash");
+  return !(lhs < rhs);
+}
 inline bool operator== (const Hash& lhs, const Hash& rhs) {
+  if (lhs.empty() || rhs.empty()) throw std::runtime_error("Comparing empty Hash");
   return (memcmp(lhs.hash_, rhs.hash_, F_GENERIC_HASH_LEN) == 0) ? true : false;
 }
-inline bool operator!= (const Hash& lhs, const Hash& rhs)
-  { return !(lhs == rhs); }
+inline bool operator!= (const Hash& lhs, const Hash& rhs) {
+  if (lhs.empty() || rhs.empty()) throw std::runtime_error("Comparing empty Hash");
+  return !(lhs == rhs);
+}
 
 struct hashPointerLessThanFunctor {
-  bool operator()(const Hash* lhs, const Hash* rhs) const
-    { return (*lhs < *rhs); }
+  bool operator()(const Hash* lhs, const Hash* rhs) const {
+    if (lhs->empty() || rhs->empty()) throw std::runtime_error("Comparing empty Hash");
+    return (*lhs < *rhs);
+  }
 };
 struct hashPointerEqualsFunctor {
-  bool operator()(const Hash* lhs, const Hash* rhs) const
-    { return ((*lhs) == (*rhs)); }
+  bool operator()(const Hash* lhs, const Hash* rhs) const {
+    if (lhs->empty() || rhs->empty()) throw std::runtime_error("Comparing empty Hash");
+    return ((*lhs) == (*rhs));
+  }
 };
 struct hashSharedPointerLessThanFunctor {
   bool operator()
     (const std::shared_ptr<Hash> lhs,
-     const std::shared_ptr<Hash> rhs) const
-      { return (*lhs < *rhs); }
+     const std::shared_ptr<Hash> rhs) const {
+       if (lhs->empty() || rhs->empty()) throw std::runtime_error("Comparing empty Hash");
+       return (*lhs < *rhs);
+  }
 };
 struct hashSharedPointerEqualsFunctor {
   bool operator()
     (const std::shared_ptr<Hash> lhs,
-     const std::shared_ptr<Hash> rhs) const
-      { return ((*lhs) == (*rhs)); }
+     const std::shared_ptr<Hash> rhs) const {
+       if (lhs->empty() || rhs->empty()) throw std::runtime_error("Comparing empty Hash");
+       return ((*lhs) == (*rhs));
+  }
 };
 struct hashAsKeyForContainerFunctor {
     size_t operator()(Hash* hash) const {
+        if (hash->empty()) throw std::runtime_error("Using empty Hash");
         size_t small_hash;
         std::memcpy(&small_hash, hash->getBytes(), sizeof(size_t));
         return small_hash;

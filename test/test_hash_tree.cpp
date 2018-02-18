@@ -37,48 +37,68 @@ BOOST_AUTO_TEST_CASE(hash_tree_empty)
 }
 BOOST_AUTO_TEST_CASE(hash_tree_size_compare)
 {
-  std::shared_ptr<Hash> hash(new Hash("test"));
+  std::shared_ptr<Hash> hash01(new Hash("test01"));
+  std::shared_ptr<Hash> hash02(new Hash("test02"));
+  std::shared_ptr<Hash> hash03(new Hash("test03"));
+  std::shared_ptr<Hash> hash04(new Hash("test04"));
+  std::shared_ptr<Hash> hash05(new Hash("test05"));
+  std::shared_ptr<Hash> hash06(new Hash("test06"));
+  std::shared_ptr<Hash> hash07(new Hash("test07"));
+  std::shared_ptr<Hash> hash08(new Hash("test08"));
+  std::shared_ptr<Hash> hash09(new Hash("test09"));
+  std::shared_ptr<Hash> hash10(new Hash("test10"));
+  std::shared_ptr<Hash> hash11(new Hash("test11"));
+  std::shared_ptr<Hash> hash12(new Hash("test12"));
+  std::shared_ptr<Hash> hash13(new Hash("test13"));
+  std::shared_ptr<Hash> hash14(new Hash("test14"));
+  std::shared_ptr<Hash> hash15(new Hash("test15"));
+  std::shared_ptr<Hash> hash16(new Hash("test16"));
+  std::shared_ptr<Hash> hash17(new Hash("test17"));
   std::vector< std::shared_ptr<Hash> > hashes;
+
   // 1 node
-  hashes.push_back(hash);
+  hashes.push_back(hash01);
   HashTree* ht = new HashTree(hashes);
   ht->makeHashTreeFromSelf();
   BOOST_CHECK_EQUAL(1, ht->getHashes()->size());
   // 2 nodes
-  hashes.push_back(hash);
+  hashes.push_back(hash02);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(3, ht->getHashes()->size());
   // 3 nodes
-  hashes.push_back(hash);
+  hashes.push_back(hash03);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(6, ht->getHashes()->size());
   // 4 nodes
-  hashes.push_back(hash);
+  hashes.push_back(hash04);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(7, ht->getHashes()->size());
   // 5 nodes
-  hashes.push_back(hash);
+  hashes.push_back(hash05);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(11, ht->getHashes()->size());
   // 7 nodes
-  hashes.push_back(hash);
-  hashes.push_back(hash);
+  hashes.push_back(hash06);
+  hashes.push_back(hash07);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(14, ht->getHashes()->size());
   // 9 nodes
-  hashes.push_back(hash);
-  hashes.push_back(hash);
+  hashes.push_back(hash08);
+  hashes.push_back(hash09);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(20, ht->getHashes()->size());
   // 16 nodes
-  for (int i = 0; i < 7; ++i)
-  {
-    hashes.push_back(hash);
-  }
+  hashes.push_back(hash10);
+  hashes.push_back(hash11);
+  hashes.push_back(hash12);
+  hashes.push_back(hash13);
+  hashes.push_back(hash14);
+  hashes.push_back(hash15);
+  hashes.push_back(hash16);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(31, ht->getHashes()->size());
   // 17 nodes
-  hashes.push_back(hash);
+  hashes.push_back(hash17);
   ht->makeHashTree(hashes);
   BOOST_CHECK_EQUAL(37, ht->getHashes()->size());
 
@@ -169,19 +189,22 @@ BOOST_AUTO_TEST_CASE(hash_tree_sort)
 }
 BOOST_AUTO_TEST_CASE(hash_tree_top_hash)
 {
-  std::shared_ptr<Hash> hash(new Hash("test1"));
-  std::vector< std::shared_ptr<Hash> > hashes = {hash, hash, hash};
+  std::shared_ptr<Hash> hash1(new Hash("test1"));
+  std::shared_ptr<Hash> hash2(new Hash("test2"));
+  std::shared_ptr<Hash> hash3(new Hash("test3"));
+  std::vector< std::shared_ptr<Hash> > hashes = {hash1, hash2, hash3};
   HashTree* ht = new HashTree(hashes);
   ht->makeHashTreeFromSelf();
+
   // Value generated with pyblake2
-  std::string hash_string = "b242e8fb44f589a2bd6d74dcdd63ceebd3be332e01ccc0730b316503527b64705e244151110294142bffee83f1d1b469b7ee9c11c7346ac70403fedf1693bf69";
+  std::string hash_string = "1e8c2d4172f2730c30074270271f3aff0a826cb31f631d39f952fb6628125096b115f4b1f91781afaed2f1546d7c4e4ae58803376cc322cb8e164f13ac406eb6";
   BOOST_CHECK_EQUAL(hash_string, ht->getTopHash()->getString());
 }
 BOOST_AUTO_TEST_CASE(hash_tree_elements_per_level)
 {
-  std::shared_ptr<Hash> hash1(new Hash("test1")); 
-  std::shared_ptr<Hash> hash2(new Hash("test2")); 
-  std::shared_ptr<Hash> hash3(new Hash("test3")); 
+  std::shared_ptr<Hash> hash1(new Hash("test1"));
+  std::shared_ptr<Hash> hash2(new Hash("test2"));
+  std::shared_ptr<Hash> hash3(new Hash("test3"));
   std::shared_ptr<Hash> hash4(new Hash("test4"));
   std::shared_ptr<Hash> hash5(new Hash("test5"));
   std::vector< std::shared_ptr<Hash> > hashes = {hash1, hash2, hash3, hash4, hash5};
@@ -192,11 +215,15 @@ BOOST_AUTO_TEST_CASE(hash_tree_elements_per_level)
   BOOST_CHECK_EQUAL(epl[1],3);
   BOOST_CHECK_EQUAL(epl[2],2);
   BOOST_CHECK_EQUAL(epl[3],1);
-  
-  std::vector< std::shared_ptr<Hash> > h = {hash1, hash1, hash2, hash1};
-  std::cout << h.size() << std::endl;
-  std::unique(h.begin(), h.end());
-  std::cout << h.size() << std::endl;
-  std::cout << hash1.use_count() << std::endl;
-  BOOST_CHECK(false);
+}
+BOOST_AUTO_TEST_CASE(hash_tree_elements_per_level_nonunique)
+{
+  std::shared_ptr<Hash> hash1(new Hash("test1"));
+  std::shared_ptr<Hash> hash2(new Hash("test2"));
+  std::vector< std::shared_ptr<Hash> > hashes = {hash1, hash1, hash2, hash1, hash2, hash1};
+  HashTree* ht = new HashTree(hashes);
+  ht->makeHashTreeFromSelf();
+  const std::vector<int> epl = *(ht->getElementsPerLevel());
+  BOOST_CHECK_EQUAL(epl[0],2);
+  BOOST_CHECK_EQUAL(epl[1],1);
 }
